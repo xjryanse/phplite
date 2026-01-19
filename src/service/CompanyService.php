@@ -17,7 +17,7 @@ class CompanyService {
     public static function sessionInit($comKey){
         // 公司key
         Session::set(SESSION_COMPANY_KEY, $comKey);
-        $info       = EntrySdk::companyKeyInfo($key);
+        $info       = EntrySdk::companyKeyInfo($comKey);
         $companyId  = Arrays::value($info, 'id');
         // 公司id
         Session::set(SESSION_COMPANY_ID, $companyId);

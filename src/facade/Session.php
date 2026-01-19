@@ -4,7 +4,7 @@ namespace xjryanse\phplite\facade;
 
 use xjryanse\phplite\Facade;
 /**
- * @see \speedy\core\Session
+ * @see \xjryanse\phplite\core\Session
  */
 class Session extends Facade{
 
