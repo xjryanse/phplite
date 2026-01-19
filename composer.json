@@ -1,0 +1,19 @@
+{
+    "name": "xjryanse/phplite",
+    "description": "php极简框架",
+    "type": "library",
+    "authors": [
+        {
+            "name": "xjryanse",
+            "email": "xjryanse@sina.com"
+        }
+    ],
+	"require": {
+    }, 
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+          "xjryanse\\phplite\\": "src/"
+        }
+    }
+}
