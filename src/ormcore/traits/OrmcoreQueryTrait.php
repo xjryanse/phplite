@@ -3,6 +3,7 @@
 namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\servicesdk\data\DataSdk;
+use xjryanse\phplite\logic\Arrays;
 
 /**
  * 模型映射查询逻辑
@@ -38,7 +39,18 @@ trait OrmcoreQueryTrait {
         return $this->uuData;
     }
     
-    
-    
-    
+    public function fv($field){
+        $info = $this->get();
+        return Arrays::value($info, $field);
+    }
+    /**
+     * 
+     * @param type $con
+     * @return type
+     */
+    public static function conList($con = []){
+        $tableName  = static::getTable();
+        return DataSdk::tableDataConList($tableName, $con);
+    }
+
 }
