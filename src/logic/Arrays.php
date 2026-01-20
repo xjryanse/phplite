@@ -12,14 +12,14 @@ class Arrays {
     /**
      * 数组取值
      */
-    public static function value(&$array, &$key, $default = '') {
+    public static function value(&$array, $key, $default = '') {
         return $array && isset($array[$key]) ? $array[$key] : $default;
     }
 
     /**
      * 20250718:转成数组
      */
-    public static function valueArr(&$array, &$key){
+    public static function valueArr(&$array, $key){
         $val = static::value($array, $key);
         if(!$val){
             return [];
