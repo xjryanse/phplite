@@ -47,7 +47,7 @@ class Redis{
      * 会话用实例：db1;
      */
     public function ssInst() {
-        if(!$this->redis[1]){
+        if(!isset($this->redis[1])){
             $conf       = $this->default;
             $conf['db'] = '1';
             $this->init($conf);

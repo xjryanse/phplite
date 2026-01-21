@@ -27,6 +27,8 @@ class Error {
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;
         $res['message'] = $e->getMessage();
+        $res['trace']   = $e->getTraceAsString();
+        
         
         echo json_encode($res, JSON_UNESCAPED_UNICODE);
     }

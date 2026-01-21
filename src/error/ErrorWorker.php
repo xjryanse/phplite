@@ -27,6 +27,8 @@ class ErrorWorker {
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;
         $res['message'] = $e->getMessage();
+        $res['trace']   = $e->getTraceAsString();
+        
         // workerman和php环境处理方法不同
         static::$connection->send(json_encode($res, JSON_UNESCAPED_UNICODE));
     }
