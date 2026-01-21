@@ -1,13 +1,13 @@
 <?php
 
-namespace xjryanse\phplite\phpfpm;
+namespace xjryanse\phplite\error;
 
 use xjryanse\servicesdk\ErrNotice;
 
 /**
  * 注册异常处理
  */
-class Error {
+class ErrorFpm {
 
     use \xjryanse\phplite\traits\ResponseTrait;
 
@@ -17,8 +17,6 @@ class Error {
     public static function register() {
         // 异常处理
         set_exception_handler([__CLASS__, 'render']);
-        // 20250208
-        // register_shutdown_function([__CLASS__, 'shutdown']);
     }
 
     public static function render(\Throwable $e) {

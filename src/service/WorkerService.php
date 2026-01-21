@@ -4,6 +4,7 @@ namespace xjryanse\phplite\service;
 
 use Workerman\Worker;
 use xjryanse\phplite\logic\Arrays;
+use xjryanse\phplite\error\ErrorWorker;
 /**
  * 2026年1月14日
  * 微服务的workerman启动
@@ -29,6 +30,9 @@ class WorkerService {
     protected static function initOnMessage(){
         // 收到其他服务的调用请求时，处理业务逻辑
         self::$tcp->onMessage = function ($conn, $data) {
+            // 1. 注册异常处理：传入Workerman连接对象
+            ErrorWorker::register($conn);
+            // throw new \Exception('worker调试');
             // 接收请求，转发处理
             return static::onMsgLogic($conn, $data);
         };
