@@ -68,7 +68,6 @@ class WorkerService {
         return true;
     }
     
-
     public static function response($code, $msg, $data = [], $res = []){
         $res['code']    = $code;
         $res['msg']     = $msg;

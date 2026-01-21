@@ -4,7 +4,7 @@ namespace xjryanse\phplite\phpfpm;
 
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\facade\Request;
-
+use xjryanse\servicesdk\ErrNotice;
 /**
  * 注册异常处理
  */
@@ -23,7 +23,7 @@ class Error {
     }
 
     public static function render(\Throwable $e) {
-
+        ErrNotice::notice($e);
         //有错误的用1
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;
