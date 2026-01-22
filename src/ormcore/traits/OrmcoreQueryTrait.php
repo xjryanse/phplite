@@ -50,7 +50,19 @@ trait OrmcoreQueryTrait {
      */
     public static function conList($con = []){
         $tableName  = static::getTable();
+        DataSdk::setGlobalDbIdByCate(static::$dbCate);
         return DataSdk::tableDataConList($tableName, $con);
+    }
+    
+    /**
+     * 2026年1月22日
+     * @param type $con
+     * @return type
+     */
+    public static function conFind($con = []){
+        $tableName  = static::getTable();
+        DataSdk::setGlobalDbIdByCate(static::$dbCate);
+        return DataSdk::tableDataConFind($tableName, $con);
     }
 
 }

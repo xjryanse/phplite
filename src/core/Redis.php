@@ -37,7 +37,7 @@ class Redis{
      * @return type
      */
     public function rdInst() {
-        if(!$this->redis[0]){
+        if(!isset($this->redis[0]) || !$this->redis[0]){
             $this->init($this->default);
         }
         return $this->redis[0];
