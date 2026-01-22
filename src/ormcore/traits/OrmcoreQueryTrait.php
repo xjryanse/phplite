@@ -33,6 +33,7 @@ trait OrmcoreQueryTrait {
     public function get(){
         if(!$this->uuData){
             $tableName              = static::getTable();
+            DataSdk::setGlobalDbIdByCate(static::$dbCate);
             $this->uuData           = DataSdk::tableDataGet($tableName, $this->uuid);
             $this->hasUuDataQuery   = true;
         }
