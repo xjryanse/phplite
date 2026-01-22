@@ -53,8 +53,7 @@ trait OrmcoreQueryTrait {
     public function conList($con = []){
         $tableName  = static::getTable();
         $dbId       = $this->getDbIdECV();
-        DataSdk::inst($dbId)->setGlobalDbIdByCate(static::$dbCate);
-        return DataSdk::tableDataConList($tableName, $con);
+        return DataSdk::inst($dbId)->tableDataConList($tableName, $con);
     }
     
     /**
