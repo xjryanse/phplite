@@ -4,9 +4,10 @@ namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\servicesdk\data\DataSdk;
 use xjryanse\phplite\logic\Arrays;
+use xjryanse\servicesdk\DbSdk;
 
 /**
- * 模型映射查询逻辑
+ * 模型映射查询逻辑（有带数据库类型查表）
  */
 trait OrmcoreQueryTrait {
     //20220617:考虑get没取到值的情况，可以不用重复查询
@@ -33,8 +34,8 @@ trait OrmcoreQueryTrait {
     public function get(){
         if(!$this->uuData){
             $tableName              = static::getTable();
-            DataSdk::setGlobalDbIdByCate(static::$dbCate);
-            $this->uuData           = DataSdk::tableDataGet($tableName, $this->uuid);
+            $dbId                   = $this->getDbIdECV();
+            $this->uuData           = DataSdk::inst($dbId)->tableDataGet($tableName, $this->uuid);
             $this->hasUuDataQuery   = true;
         }
         return $this->uuData;
@@ -49,9 +50,10 @@ trait OrmcoreQueryTrait {
      * @param type $con
      * @return type
      */
-    public static function conList($con = []){
+    public function conList($con = []){
         $tableName  = static::getTable();
-        DataSdk::setGlobalDbIdByCate(static::$dbCate);
+        $dbId       = $this->getDbIdECV();
+        DataSdk::inst($dbId)->setGlobalDbIdByCate(static::$dbCate);
         return DataSdk::tableDataConList($tableName, $con);
     }
     
@@ -60,10 +62,10 @@ trait OrmcoreQueryTrait {
      * @param type $con
      * @return type
      */
-    public static function conFind($con = []){
+    public function conFind($con = []){
         $tableName  = static::getTable();
-        DataSdk::setGlobalDbIdByCate(static::$dbCate);
-        return DataSdk::tableDataConFind($tableName, $con);
+        $dbId       = $this->getDbIdECV();        
+        return DataSdk::inst($dbId)->tableDataConFind($tableName, $con);
     }
 
 }

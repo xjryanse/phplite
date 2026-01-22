@@ -12,9 +12,10 @@ trait OrmcoreTrait {
      * 核心模型映射的数据表
      * @return type
      */
-    public static function save(array $data) {
+    public function save(array $data) {
         $tableName  = static::getTable();
-        $res        = DataSdk::tableDataSave($tableName, $data);
+        $dbId       = $this->getDbIdECV();
+        $res        = DataSdk::inst($dbId)->tableDataSave($tableName, $data);
         return $res;
     }
     /**
@@ -25,7 +26,9 @@ trait OrmcoreTrait {
     public function update(array $data){
         $tableName  = static::getTable();
         $data['id']          = $this->uuid;
-        $res = DataSdk::tableDataUpdate($tableName, $data);
+
+        $dbId       = $this->getDbIdECV();        
+        $res = DataSdk::inst($dbId)->tableDataUpdate($tableName, $data);
         return $res;
     }
 
