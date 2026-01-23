@@ -21,6 +21,7 @@ trait ResponseTrait {
         $res['code']        = 0;     //20191205 数据返回的基本结构   三个字段   code=0 ,message='提示', data=>{}
         $res['message']     = $msg;
         $res['data']        = $data;
+        $res['device']      = gethostname();
         // $res['sessionid']   = session_id();
         // 拼接开发模式参数
         $json = json(array_merge($res, static::devModeRes()));
@@ -39,6 +40,7 @@ trait ResponseTrait {
         $res['code'] = 1;
         $res['message'] = $msg;
         $res['data'] = $data;
+        $res['device']      = gethostname();        
         return json(array_merge($res, static::devModeRes()));
     }
 
@@ -51,6 +53,7 @@ trait ResponseTrait {
         $res['code'] = $code;
         $res['message'] = $msg;
         $res['data'] = $data;
+        $res['device']      = gethostname();        
         // 20230727;输出错误信息
         if ($trace) {
             $res['trace'] = $trace;
