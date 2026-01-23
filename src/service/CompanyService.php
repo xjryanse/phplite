@@ -2,7 +2,7 @@
 
 namespace xjryanse\phplite\service;
 
-use xjryanse\phplite\facade\Session;
+use xjryanse\phplite\session\RedisSession;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\servicesdk\entry\EntrySdk;
 /**
@@ -15,12 +15,12 @@ class CompanyService {
      * @param type $comKey
      */
     public static function sessionInit($comKey){
-        // 公司key
-        Session::set(SESSION_COMPANY_KEY, $comKey);
+        // 公司key（完美写法：2026年1月22日）
+        RedisSession::current()->set(SESSION_COMPANY_KEY, $comKey);
         $info       = EntrySdk::companyKeyInfo($comKey);
         $companyId  = Arrays::value($info, 'id');
-        // 公司id
-        Session::set(SESSION_COMPANY_ID, $companyId);
+        // （完美写法：2026年1月22日）
+        RedisSession::current()->set(SESSION_COMPANY_ID, $companyId);
     }
-    
+
 }

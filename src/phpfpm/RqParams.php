@@ -53,7 +53,6 @@ class RqParams implements RqParamsInterface{
         // $this->cookie   = $request->cookie;
         // 处理上传文件
         $this->env = 'phpfpm';
-        $this->sessionInit();
         return $params;
     }
     
@@ -114,11 +113,5 @@ class RqParams implements RqParamsInterface{
     
     public function ip(): string {
         return $this->header('x-real-ip') ? : $this->header('x-forwarded-for');
-    }
-
-    protected function sessionInit() {
-        $sessionid = Arrays::value($this->header, 'sessionid');
-        // 未传时，将随机生成一个sessionid
-        Session::setSessionid($sessionid);
     }
 }

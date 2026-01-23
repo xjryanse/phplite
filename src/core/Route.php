@@ -4,7 +4,6 @@ namespace xjryanse\phplite\core;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\Strings;
 use xjryanse\phplite\service\CompanyService;
-use orm\system\SystemCompany;
 use xjryanse\phplite\interfaces\RqParamsInterface;
 /**
  * 路由解析

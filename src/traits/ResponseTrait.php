@@ -3,12 +3,11 @@
 namespace xjryanse\phplite\traits;
 
 use service\ConfigService;
-use xjryanse\phplite\facade\Session;
 use xjryanse\phplite\facade\Request;
 use xjryanse\phplite\facade\Route;
 use orm\sql\Sql;
 use xjryanse\phplite\orm\DbOperate;
-
+// use xjryanse\phplite\session\RedisSession;
 /**
  * 返回码复用
  */
@@ -19,9 +18,10 @@ trait ResponseTrait {
      */
     protected static function succReturn($msg = '请求成功', $data = '', $res = []) {
         //header('Content-Type: application/json; charset=utf-8');
-        $res['code'] = 0;     //20191205 数据返回的基本结构   三个字段   code=0 ,message='提示', data=>{}
-        $res['message'] = $msg;
-        $res['data'] = $data;
+        $res['code']        = 0;     //20191205 数据返回的基本结构   三个字段   code=0 ,message='提示', data=>{}
+        $res['message']     = $msg;
+        $res['data']        = $data;
+        // $res['sessionid']   = session_id();
         // 拼接开发模式参数
         $json = json(array_merge($res, static::devModeRes()));
         return $json;

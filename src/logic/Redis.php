@@ -8,8 +8,6 @@ class Redis {
     
     use \xjryanse\phplite\traits\InstTrait;
     
-    protected static $redisRaw;
-
     private $redis = [];
     
     private $default = [
@@ -37,9 +35,11 @@ class Redis {
      * redis连接实例(缓存永)
      * @return type
      */
-    public function rdInst($index = 0) {
+    public function rdInst($index = 0) :\Redis{
         if(!isset($this->redis[$index]) || !$this->redis[$index]){
-            $this->init($this->default);
+            $conf = $this->default;
+            $conf['db'] = $index;
+            $this->init($conf);
         }
         return $this->redis[$index];
     }
