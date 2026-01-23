@@ -4,6 +4,7 @@ namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\servicesdk\data\DataSdk;
 use xjryanse\phplite\logic\Arrays;
+use xjryanse\phplite\logic\Arrays2d;
 use xjryanse\servicesdk\DbSdk;
 
 /**
@@ -56,10 +57,14 @@ trait OrmcoreQueryTrait {
      * @param type $con
      * @return type
      */
-    public function conList($con = []){
+    public function conList($con = [],$orderBy=''){
         $tableName  = static::getTable();
         $dbId       = $this->getDbIdECV();
-        return DataSdk::inst($dbId)->tableDataConList($tableName, $con);
+        $lists = DataSdk::inst($dbId)->tableDataConList($tableName, $con);
+        if($orderBy){
+            $lists = Arrays2d::sort($lists, $orderBy);
+        }
+        return $lists;
     }
     
     /**

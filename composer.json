@@ -14,6 +14,10 @@
     "autoload": {
         "psr-4": {
           "xjryanse\\phplite\\": "src/"
-        }
+        },
+        "files": [
+            "helper/const.php",
+            "helper/helper.php"
+        ]
     }
 }
