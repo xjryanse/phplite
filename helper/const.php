@@ -31,4 +31,5 @@ const FR_FINANCE_MONEY          = 'money';          //余额:指存放在平台�
 const FR_FINANCE_CMBSKT         = 'cmbSkt';         //招商银行收款通
 const FR_FINANCE_WXWORK         = 'wxWork';         //企业微信
 
+const HOST_BIND_ID              = 'hostBindId';
 
