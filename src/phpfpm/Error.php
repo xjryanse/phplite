@@ -28,6 +28,8 @@ class Error {
         $res['code']    = $e->getCode() ?: 1;
         $res['message'] = $e->getMessage();
         $res['trace']   = $e->getTrace();
+        $res['file']    = $e->getFile();
+        $res['line']    = $e->getLine();
         
         
         echo json_encode($res, JSON_UNESCAPED_UNICODE);
