@@ -2,23 +2,32 @@
 
 namespace xjryanse\phplite\core;
 
-use xjryanse\phplite\facade\Redis;
+use xjryanse\phplite\logic\Redis;
 use xjryanse\phplite\logic\Strings;
-use xjryanse\phplite\facade\Request;
+
 
 /**
- * 缓存
+ * redis缓存：16个库处理
+ * 0:普通业务缓存；
+ * 1:session；
+ * 2:系统配置：
+ * 3:页面配置：universal
+ * 
  */
-class Cache {
+class RCache {
 
-    use \xjryanse\phplite\traits\InstTrait;
+    use \xjryanse\phplite\traits\InstMultiTrait;
 
     /**
      * 20250226:key前缀，用于区分
      */
     protected static function preFix() {
-        $host = Request::host();
-        return md5($host);
+        return md5(ROOT_PATH);
+//        $host = Request::host();
+//        return md5($host);
+    }
+    protected function redisInst(){
+        return Redis::rdInst($this->uuid);
     }
 
     /**
@@ -29,12 +38,14 @@ class Cache {
      * @return bool
      */
     public function set($key, $value, $expire = 0) {
+        $index = $this->uuid;
+
         $keyN = self::preFix() . $key;
         $cV = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
         if ($expire > 0) {
-            return Redis::rdInst()->setex($keyN, $expire, $cV);
+            return $this->redisInst()->setex($keyN, $expire, $cV);
         }
-        return Redis::rdInst()->set($keyN, $cV);
+        return $this->redisInst()->set($keyN, $cV);
     }
 
     /**
@@ -44,7 +55,7 @@ class Cache {
      */
     public function keyState($key) {
         $keyN = self::preFix() . $key;
-        return Redis::rdInst()->ttl($keyN);
+        return $this->redisInst()->ttl($keyN);
     }
 
     /**
@@ -54,7 +65,7 @@ class Cache {
      */
     public function get($key) {
         $keyN = self::preFix() . $key;
-        $cV = Redis::rdInst()->get($keyN);
+        $cV = $this->redisInst()->get($keyN);
         if (Strings::isJson($cV)) {
             $cV = json_decode($cV, JSON_UNESCAPED_UNICODE);
         }
@@ -68,7 +79,7 @@ class Cache {
      */
     public function rm($key) {
         $keyN = self::preFix() . $key;
-        return Redis::rdInst()->del($keyN);
+        return $this->redisInst()->del($keyN);
     }
 
     /**
@@ -78,7 +89,7 @@ class Cache {
      */
     public function exists($key) {
         $keyN = self::preFix() . $key;
-        return Redis::rdInst()->exists($keyN);
+        return $this->redisInst()->exists($keyN);
     }
 
     /**
@@ -102,7 +113,7 @@ class Cache {
         // return Redis::rdInst()->flushDB();
         // 20250826：改
         $prefix = self::preFix();
-        $redis = Redis::rdInst();
+        $redis  = $this->redisInst();
         
         // 使用SCAN命令安全遍历所有key，避免KEYS命令在大数据量时阻塞Redis
         $iterator   = null;
@@ -110,7 +121,6 @@ class Cache {
         do {
             // 扫描带有本系统前缀的key
             $keys = $redis->scan($iterator, $prefix . '*', $count);
-            
             if (!empty($keys)) {
                 // 批量删除找到的key
                 $redis->del($keys);

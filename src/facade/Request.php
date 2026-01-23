@@ -4,7 +4,7 @@ namespace xjryanse\phplite\facade;
 
 use xjryanse\phplite\Facade;
 /**
- * @see \speedy\core\Request
+ * @see \xjryanse\phplite\core\Request
  */
 class Request extends Facade{
 
