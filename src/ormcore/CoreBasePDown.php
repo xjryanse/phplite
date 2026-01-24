@@ -16,11 +16,17 @@ abstract class CoreBasePDown {
     public static function __callStatic($method, $params) {
         $inst = static::commInst();
         // 运行时，即调用子类
+        if(!method_exists($inst, $method)){
+            throw new Exception('方法'.$method.'不存在');
+        }
         return call_user_func_array([$inst, $method], $params);
     }
 
     public function __call($method, $params) {
         $inst = static::commInst($this->uuid);
+        if(!method_exists($inst, $method)){
+            throw new Exception('方法'.$method.'不存在');
+        }
         // 运行时，即调用子类
         return call_user_func_array([$inst, $method], $params);
     }
@@ -44,7 +50,7 @@ abstract class CoreBasePDown {
      */
     public static function commInst($id = 0){
         static::$times ++;
-        if(static::$times > 10 ){
+        if(static::$times > 100 ){
             throw new Exception('死循环');
         }
         // 设定数据库操作sdk实例

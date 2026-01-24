@@ -17,6 +17,7 @@ class OrmCoreBase {
     public function setDataSdk($dataSdk){
         $this->dataSdk = $dataSdk;
     }
+    
     public function dataSdkCheck(){
         if(!$this->dataSdk){
             throw new Exception('没有指定dataSdk实例，请联系开发排查');

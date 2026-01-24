@@ -11,19 +11,15 @@ class FilePath{
      * 应用目录
      */
     public function app() {
-        // 当前文件目录
-        $thisPath = __DIR__;
-        
-        return $thisPath.'/../../../../../app/';
+        $thisPath = ROOT_PATH;
+        return $thisPath.'/app/';
     }
     /*
      * 配置目录
      */
     public function config() {
-        // 当前文件目录
-        $thisPath = __DIR__;
-        
-        return $thisPath.'/../../../../../config/';
+        $thisPath = ROOT_PATH;
+        return $thisPath.'/config/';
     }
     /**
      * 模板文件目录
@@ -31,9 +27,8 @@ class FilePath{
      */
     public function template() {
         // 当前文件目录
-        $thisPath = __DIR__;
-        
-        return $thisPath.'/../../../../../template/';
+        $thisPath = ROOT_PATH;
+        return $thisPath.'/template/';
     }
 
 }
