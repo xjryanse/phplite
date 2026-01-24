@@ -45,7 +45,8 @@ abstract class CoreBaseEntry {
             'http_ip'           =>'127.0.0.1',
             'http_port'         =>'9914',
         ];
-        $dataSdk    = DataSdk::inst('ENTRY');
+        // entry直接绑定0号数据库
+        $dataSdk    = DataSdk::inst('ENTRY')->dbBind(0);
         $dataSdk->serverInfoSet($serverInfo);
         $inst->setDataSdk($dataSdk);
         // 设定操作数据表
