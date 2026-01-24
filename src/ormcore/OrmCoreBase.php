@@ -1,7 +1,6 @@
 <?php
 namespace xjryanse\phplite\ormcore;
 
-use xjryanse\speedy\core\Orm;
 use xjryanse\servicesdk\DbSdk;
 use Exception;
 /**
@@ -10,8 +9,12 @@ use Exception;
  */
 abstract class OrmCoreBase {
     use \xjryanse\phplite\traits\InstMultiTrait;
+    use \xjryanse\phplite\ormcore\traits\PhpFpmTrait;
     use \xjryanse\phplite\ormcore\traits\OrmcoreTrait;
     use \xjryanse\phplite\ormcore\traits\OrmcoreQueryTrait;
+    
+    // 上级服务透传的 域名配置绑定号
+    protected $bindId;
     // 指定要查哪个数据库
     protected $dbId;
     /***
@@ -33,4 +36,14 @@ abstract class OrmCoreBase {
         return DbSdk::dbId(static::$dbCate);
     }
     
+    /**
+     * 设置绑定id:然后再调用
+     * 
+     * @return $this
+     */
+    public function hostBind($bindId){
+        $this->bindId = $bindId;
+        return $this;
+    }
+
 }

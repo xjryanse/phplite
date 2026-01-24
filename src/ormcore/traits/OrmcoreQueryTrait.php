@@ -5,7 +5,6 @@ namespace xjryanse\phplite\ormcore\traits;
 use xjryanse\servicesdk\data\DataSdk;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\Arrays2d;
-use xjryanse\servicesdk\DbSdk;
 
 /**
  * 模型映射查询逻辑（有带数据库类型查表）
@@ -36,7 +35,8 @@ trait OrmcoreQueryTrait {
         if(!$this->uuData){
             $tableName              = static::getTable();
             $dbId                   = $this->getDbIdECV();
-            $this->uuData           = DataSdk::inst($dbId)->tableDataGet($tableName, $this->uuid);
+            $bindId                 = $this->bindId;
+            $this->uuData           = DataSdk::inst($bindId)->dbBind($dbId)->tableDataGet($tableName, $this->uuid);
             $this->hasUuDataQuery   = true;
         }
         return $this->uuData;
@@ -60,7 +60,8 @@ trait OrmcoreQueryTrait {
     public function conList($con = [],$orderBy=''){
         $tableName  = static::getTable();
         $dbId       = $this->getDbIdECV();
-        $lists = DataSdk::inst($dbId)->tableDataConList($tableName, $con);
+        $bindId     = $this->bindId;
+        $lists = DataSdk::inst($bindId)->dbBind($dbId)->tableDataConList($tableName, $con);
         if($orderBy){
             $lists = Arrays2d::sort($lists, $orderBy);
         }
@@ -74,8 +75,9 @@ trait OrmcoreQueryTrait {
      */
     public function conFind($con = []){
         $tableName  = static::getTable();
-        $dbId       = $this->getDbIdECV();        
-        return DataSdk::inst($dbId)->tableDataConFind($tableName, $con);
+        $dbId       = $this->getDbIdECV();      
+        $bindId     = $this->bindId;
+        return DataSdk::inst($bindId)->dbBind($dbId)->tableDataConFind($tableName, $con);
     }
 
 }

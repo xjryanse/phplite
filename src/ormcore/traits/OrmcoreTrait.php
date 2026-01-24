@@ -15,7 +15,8 @@ trait OrmcoreTrait {
     public function save(array $data) {
         $tableName  = static::getTable();
         $dbId       = $this->getDbIdECV();
-        $res        = DataSdk::inst($dbId)->tableDataSave($tableName, $data);
+        $bindId     = $this->bindId;
+        $res        = DataSdk::inst($bindId)->dbBind($dbId)->tableDataSave($tableName, $data);
         return $res;
     }
     /**
@@ -27,8 +28,9 @@ trait OrmcoreTrait {
         $tableName  = static::getTable();
         $data['id']          = $this->uuid;
 
-        $dbId       = $this->getDbIdECV();        
-        $res = DataSdk::inst($dbId)->tableDataUpdate($tableName, $data);
+        $dbId       = $this->getDbIdECV();    
+        $bindId     = $this->bindId;        
+        $res = DataSdk::inst($bindId)->dbBind($dbId)->tableDataUpdate($tableName, $data);
         return $res;
     }
 
