@@ -33,12 +33,7 @@ trait OrmcoreQueryTrait {
         $info = $this->get();
         return Arrays::value($info, $field);
     }
-    
-    public static function idFv($id, $field){
-        $info = static::inst($id)->get();
-        return Arrays::value($info, $field);
-    }
-    
+
     /**
      * 
      * @param type $con
