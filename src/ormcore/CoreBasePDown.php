@@ -32,6 +32,9 @@ abstract class CoreBasePDown {
     public static function setHostBind($hostBindId){
         static::$hostBindId = $hostBindId;
     }
+    public static function getHostBindId(){
+        return static::$hostBindId;
+    }
     
     protected static $times = 0;
     /**
