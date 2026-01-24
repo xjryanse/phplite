@@ -45,5 +45,11 @@ abstract class OrmCoreBase {
         $this->bindId = $bindId;
         return $this;
     }
+    
+    public function hostBindCheck(){
+        if(!$this->bindId){
+            throw new Exception('没有透传bindId');
+        }
+    }
 
 }

@@ -13,6 +13,8 @@ trait OrmcoreTrait {
      * @return type
      */
     public function save(array $data) {
+        $this->hostBindCheck();
+        
         $tableName  = static::getTable();
         $dbId       = $this->getDbIdECV();
         $bindId     = $this->bindId;
@@ -25,6 +27,8 @@ trait OrmcoreTrait {
      * @return type
      */
     public function update(array $data){
+        $this->hostBindCheck();
+        
         $tableName  = static::getTable();
         $data['id']          = $this->uuid;
 

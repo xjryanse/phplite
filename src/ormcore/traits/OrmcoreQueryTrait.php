@@ -5,7 +5,7 @@ namespace xjryanse\phplite\ormcore\traits;
 use xjryanse\servicesdk\data\DataSdk;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\Arrays2d;
-
+use Exception;
 /**
  * 模型映射查询逻辑（有带数据库类型查表）
  */
@@ -32,6 +32,7 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function get(){
+        $this->hostBindCheck();
         if(!$this->uuData){
             $tableName              = static::getTable();
             $dbId                   = $this->getDbIdECV();
@@ -43,11 +44,13 @@ trait OrmcoreQueryTrait {
     }
     
     public function fv($field){
+        $this->hostBindCheck();
         $info = $this->get();
         return Arrays::value($info, $field);
     }
     
     public static function idFv($id, $field){
+        $this->hostBindCheck();
         $info = static::inst($id)->get();
         return Arrays::value($info, $field);
     }
@@ -58,6 +61,8 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conList($con = [],$orderBy=''){
+        $this->hostBindCheck();
+        
         $tableName  = static::getTable();
         $dbId       = $this->getDbIdECV();
         $bindId     = $this->bindId;
@@ -74,6 +79,8 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conFind($con = []){
+        $this->hostBindCheck();
+        
         $tableName  = static::getTable();
         $dbId       = $this->getDbIdECV();      
         $bindId     = $this->bindId;

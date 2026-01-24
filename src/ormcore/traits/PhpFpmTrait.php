@@ -19,5 +19,17 @@ trait PhpFpmTrait {
         }
         return static::inst()->hostBind($hostBindId);
     }
+    /**
+     * 适用于已经实例化的类库设置参数
+     * @return type
+     * @throws Exception
+     */
+    public function fpmHostBind(){
+        $hostBindId = EntrySdk::currentHostBindId();
+        if(!$hostBindId){
+            throw new Exception('当前域名没有配置绑定信息$hostBind,请排查');
+        }
+        return $this->hostBind($hostBindId);
+    }
 
 }
