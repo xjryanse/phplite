@@ -45,7 +45,7 @@ if (!function_exists('config')) {
         // 获取配置文件名，例如 'database'
         $file = array_shift($parts);
         // 构建配置文件的路径
-        $configFile = __DIR__ . '/config/' . $file . '.php';
+        $configFile = ROOT_PATH . '/config/' . $file . '.php';
 
         // 检查配置文件是否存在
         if (file_exists($configFile)) {
