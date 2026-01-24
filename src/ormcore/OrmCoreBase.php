@@ -10,13 +10,16 @@ class OrmCoreBase {
     use \xjryanse\phplite\traits\InstMultiTrait;
     use \xjryanse\phplite\ormcore\traits\OrmcoreTrait;
     use \xjryanse\phplite\ormcore\traits\OrmcoreQueryTrait;
+
     // 依赖注入不同类库
     protected $dataSdk;
-    /**
-     * 
-     * @param type $dataSdk
-     */
     public function setDataSdk($dataSdk){
         $this->dataSdk = $dataSdk;
     }
+    
+    protected $table;
+    public function setTable($table){
+        $this->table = $table;
+    }
+    
 }

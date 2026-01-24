@@ -2,7 +2,6 @@
 
 namespace xjryanse\phplite\ormcore\traits;
 
-use xjryanse\servicesdk\data\DataSdk;
 
 /**
  * 模型映射查询逻辑
@@ -14,10 +13,7 @@ trait OrmcoreTrait {
      */
     public function save(array $data) {
         $this->hostBindCheck();
-        
-        $tableName  = static::getTable();
-        $dbId       = $this->getDbIdECV();
-        $bindId     = $this->bindId;
+        $tableName  = $this->table;
         $res        = $this->dataSdk->tableDataSave($tableName, $data);
         return $res;
     }
@@ -29,11 +25,9 @@ trait OrmcoreTrait {
     public function update(array $data){
         $this->hostBindCheck();
         
-        $tableName  = static::getTable();
-        $data['id']          = $this->uuid;
+        $tableName  = $this->table;
+        $data['id'] = $this->uuid;
 
-        $dbId       = $this->getDbIdECV();    
-        $bindId     = $this->bindId;        
         $res = $this->dataSdk->tableDataUpdate($tableName, $data);
         return $res;
     }

@@ -14,26 +14,14 @@ trait OrmcoreQueryTrait {
     protected $hasUuDataQuery = false;
     protected $uuData = [];
     protected $uuid;
-    
-    /**
-     * 核心模型映射的数据表
-     * @return type
-     */
-    public static function getTable() {
-        // 数据库表前缀
-        $prefix         = 'w_';
-        $className      = static::class;
-        $shortClassName = substr($className, strrpos($className, '\\') + 1);
-        $tableNameN     = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $shortClassName));
-        return $prefix.$tableNameN;
-    }
+
     /**
      * 获取单条数据
      * @return type
      */
     public function get(){
         if(!$this->uuData){
-            $tableName              = static::getTable();
+            $tableName              = $this->table;
             $this->uuData           = $this->dataSdk->tableDataGet($tableName, $this->uuid);
             $this->hasUuDataQuery   = true;
         }
@@ -56,7 +44,7 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conList($con = [],$orderBy=''){
-        $tableName  = static::getTable();
+        $tableName              = $this->table;
         $lists = $this->dataSdk->tableDataConList($tableName, $con);
         if($orderBy){
             $lists = Arrays2d::sort($lists, $orderBy);
@@ -70,7 +58,7 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conFind($con = []){
-        $tableName  = static::getTable();
+        $tableName              = $this->table;
         return $this->dataSdk->tableDataConFind($tableName, $con);
     }
 
