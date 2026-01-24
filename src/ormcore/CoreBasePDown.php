@@ -48,8 +48,9 @@ abstract class CoreBasePDown {
         $hostBindId = static::$hostBindId;
         if(!$hostBindId){
             throw new Exception('未设置$hostBindId');
-        }
-        $dbId       = DbSdk::dbId(static::$dbCate);
+        }       
+        // 2026年1月24日：增加透传id
+        $dbId       = DbSdk::dbId(static::$dbCate, $hostBindId);
 
         $inst       = OrmCoreBase::inst($id);
         $dataSdk    = DataSdk::inst($hostBindId)->dbBind($dbId);
