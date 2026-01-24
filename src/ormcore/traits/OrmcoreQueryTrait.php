@@ -20,6 +20,7 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function get(){
+        $this->dataSdkCheck();
         if(!$this->uuData){
             $tableName              = $this->table;
             $this->uuData           = $this->dataSdk->tableDataGet($tableName, $this->uuid);
@@ -44,6 +45,7 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conList($con = [],$orderBy=''){
+        $this->dataSdkCheck();
         $tableName              = $this->table;
         $lists = $this->dataSdk->tableDataConList($tableName, $con);
         if($orderBy){
@@ -58,6 +60,7 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conFind($con = []){
+        $this->dataSdkCheck();
         $tableName              = $this->table;
         return $this->dataSdk->tableDataConFind($tableName, $con);
     }

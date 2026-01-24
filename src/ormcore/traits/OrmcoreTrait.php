@@ -12,7 +12,8 @@ trait OrmcoreTrait {
      * @return type
      */
     public function save(array $data) {
-        $this->hostBindCheck();
+        $this->dataSdkCheck();
+
         $tableName  = $this->table;
         $res        = $this->dataSdk->tableDataSave($tableName, $data);
         return $res;
@@ -23,7 +24,7 @@ trait OrmcoreTrait {
      * @return type
      */
     public function update(array $data){
-        $this->hostBindCheck();
+        $this->dataSdkCheck();
         
         $tableName  = $this->table;
         $data['id'] = $this->uuid;
