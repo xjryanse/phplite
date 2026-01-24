@@ -32,25 +32,20 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function get(){
-        $this->hostBindCheck();
         if(!$this->uuData){
             $tableName              = static::getTable();
-            $dbId                   = $this->getDbIdECV();
-            $bindId                 = $this->bindId;
-            $this->uuData           = DataSdk::inst($bindId)->dbBind($dbId)->tableDataGet($tableName, $this->uuid);
+            $this->uuData           = $this->dataSdk->tableDataGet($tableName, $this->uuid);
             $this->hasUuDataQuery   = true;
         }
         return $this->uuData;
     }
     
     public function fv($field){
-        $this->hostBindCheck();
         $info = $this->get();
         return Arrays::value($info, $field);
     }
     
     public static function idFv($id, $field){
-        $this->hostBindCheck();
         $info = static::inst($id)->get();
         return Arrays::value($info, $field);
     }
@@ -61,12 +56,8 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conList($con = [],$orderBy=''){
-        $this->hostBindCheck();
-        
         $tableName  = static::getTable();
-        $dbId       = $this->getDbIdECV();
-        $bindId     = $this->bindId;
-        $lists = DataSdk::inst($bindId)->dbBind($dbId)->tableDataConList($tableName, $con);
+        $lists = $this->dataSdk->tableDataConList($tableName, $con);
         if($orderBy){
             $lists = Arrays2d::sort($lists, $orderBy);
         }
@@ -79,12 +70,8 @@ trait OrmcoreQueryTrait {
      * @return type
      */
     public function conFind($con = []){
-        $this->hostBindCheck();
-        
         $tableName  = static::getTable();
-        $dbId       = $this->getDbIdECV();      
-        $bindId     = $this->bindId;
-        return DataSdk::inst($bindId)->dbBind($dbId)->tableDataConFind($tableName, $con);
+        return $this->dataSdk->tableDataConFind($tableName, $con);
     }
 
 }
