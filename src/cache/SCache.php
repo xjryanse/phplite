@@ -6,6 +6,7 @@ use xjryanse\phplite\core\RCache;
 /**
  * 系统缓存；代理门面
  * @see \xjryanse\phplite\core\RCache
+ * @method static mixed funcGet($key, $func, $expire = null)设置缓存
  */
 class SCache{
     // 系统配置用2；

@@ -27,7 +27,7 @@ class RCache {
 //        return md5($host);
     }
     protected function redisInst(){
-        return Redis::rdInst($this->uuid);
+        return Redis::inst()->rdInst($this->uuid);
     }
 
     /**
@@ -38,8 +38,6 @@ class RCache {
      * @return bool
      */
     public function set($key, $value, $expire = 0) {
-        $index = $this->uuid;
-
         $keyN = self::preFix() . $key;
         $cV = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
         if ($expire > 0) {
