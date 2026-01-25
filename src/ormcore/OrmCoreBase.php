@@ -9,7 +9,11 @@ use Exception;
 class OrmCoreBase {
 
     use \xjryanse\phplite\traits\InstMultiTrait;
+    // 单条写操作
     use \xjryanse\phplite\ormcore\traits\OrmcoreTrait;
+    // 批量写操作
+    use \xjryanse\phplite\ormcore\traits\OrmcoreBatchTrait;
+    // 数据查询
     use \xjryanse\phplite\ormcore\traits\OrmcoreQueryTrait;
 
     // 依赖注入不同类库
