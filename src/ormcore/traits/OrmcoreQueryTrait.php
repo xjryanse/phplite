@@ -69,13 +69,15 @@ trait OrmcoreQueryTrait {
      * @param type $withSum
      * @return type
      */
-    public function paginate($con = [], $order = '', $perPage = 10, $having = '', $field = "*", $withSum = false) {
+    public function paginate($con = [], $order = '', $perPage = 10, $having = '', $field = "*", $withSum = false) {        
         // 20240505:自动添加索引，让系统越跑越快
         $this->dataSdkCheck();
         $tableName  = $this->table;
-        $pgList     = $this->dataSdk->tableDataPaginate($tableName); 
         
-
+        $sMts       = microtime(true) * 1000;
+        $pgList     = $this->dataSdk->tableDataPaginate($tableName); 
+        // 耗时分析
+        $pgList['mts']  = round(microtime(true) * 1000 - $sMts);
         return $pgList;
     }
     

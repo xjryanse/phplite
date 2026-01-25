@@ -22,7 +22,7 @@ trait ResponseTrait {
         $res['message']     = $msg;
         $res['data']        = $data;
         $res['device']      = gethostname();
-        $res['mts']         = intval(microtime(true)) - $stime;
+        $res['mts']         = intval(microtime(true) * 1000) - $stime;
         // $res['sessionid']   = session_id();
         // 拼接开发模式参数
         $json = json(array_merge($res, static::devModeRes()));
@@ -38,7 +38,7 @@ trait ResponseTrait {
         $res['message'] = $msg;
         $res['data']    = $data;
         $res['device']  = gethostname();        
-        $res['mts']         = intval(microtime(true)) - $stime;
+        $res['mts']     = intval(microtime(true) * 1000) - $stime;
         
         return json(array_merge($res, static::devModeRes()));
     }

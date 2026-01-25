@@ -14,6 +14,7 @@ abstract class CoreBasePDown {
     use \xjryanse\phplite\traits\InstMultiTrait;
     // 调用实际类的方法
     public static function __callStatic($method, $params) {
+        // 2026年1月25日：方法耗时336mss
         $inst = static::commInst();
         // 运行时，即调用子类
         if(!method_exists($inst, $method)){
@@ -58,6 +59,7 @@ abstract class CoreBasePDown {
         if(!$hostBindId){
             throw new Exception('未设置$hostBindId');
         }
+        
         $dbId       = DbSdk::dbId(static::$dbCate, $hostBindId);
 
         $inst       = OrmCoreBase::inst($id);

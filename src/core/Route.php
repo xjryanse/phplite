@@ -49,9 +49,9 @@ class Route{
         // 如果长度超4，第一个当公司key;
         if(count($pathParts) >= 4){
             $this->comKey = array_shift($pathParts); 
+            // 2026年1月25日发现耗时
+            //         global $stime;dump(microtime(true) * 1000 - $stime);
             CompanyService::sessionInit($this->comKey);
-            // 公司信息会话初始化
-            // SystemCompany::sessionInit($this->comKey);
         }
         // 根据分割结果更新模块、控制器和方法
         $this->module       = Arrays::value($pathParts, '0')?:'index';
