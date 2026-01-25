@@ -47,10 +47,10 @@ class App {
         // 实例化控制器类
         $controllerInst = new $class();
         // 检查方法是否存在
-        if (!method_exists($controllerInst, $action)) {
+        if (!method_exists($controllerInst, $action) && !method_exists($controllerInst, '__call')) {
             throw new Exception("方法" . $action . "不存在".$class);
         }
-        
+
         // 返回映射
         return $controllerInst->$action();
     }

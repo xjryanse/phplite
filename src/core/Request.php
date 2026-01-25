@@ -27,6 +27,10 @@ class Request{
         return $key ? Arrays::value($param, $key) : $param;
     }
     
+    public function get($key = ''){
+        return $this->rqParamInst->get($key);
+    }
+    
     public function post($key = ''){
         return $this->rqParamInst->post($key);
     }
