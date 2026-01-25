@@ -17,29 +17,30 @@ trait ResponseTrait {
      * 成功返回
      */
     protected static function succReturn($msg = '请求成功', $data = '', $res = []) {
-        global $stime;        
+        //header('Content-Type: application/json; charset=utf-8');
         $res['code']        = 0;     //20191205 数据返回的基本结构   三个字段   code=0 ,message='提示', data=>{}
         $res['message']     = $msg;
         $res['data']        = $data;
         $res['device']      = gethostname();
-        $res['mts']         = intval(microtime(true) * 1000) - $stime;
         // $res['sessionid']   = session_id();
         // 拼接开发模式参数
         $json = json(array_merge($res, static::devModeRes()));
         return $json;
+//        // 20250824:优化压缩
+//        header('Content-Encoding: gzip');
+//        return gzencode($json);
     }
 
     /**
      * 失败返回
      */
     protected static function errReturn($msg = '请求失败', $data = '') {
-        global $stime;
-        $res['code']    = 1;
+        // header('Content-Type: application/json; charset=utf-8');
+
+        $res['code'] = 1;
         $res['message'] = $msg;
-        $res['data']    = $data;
-        $res['device']  = gethostname();        
-        $res['mts']     = intval(microtime(true) * 1000) - $stime;
-        
+        $res['data'] = $data;
+        $res['device']      = gethostname();        
         return json(array_merge($res, static::devModeRes()));
     }
 
