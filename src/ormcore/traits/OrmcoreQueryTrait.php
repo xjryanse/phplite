@@ -59,5 +59,25 @@ trait OrmcoreQueryTrait {
         $tableName              = $this->table;
         return $this->dataSdk->tableDataConFind($tableName, $con);
     }
+    /**
+     * 2026年1月25日
+     * @param type $con
+     * @param type $order
+     * @param type $perPage
+     * @param type $having
+     * @param type $field
+     * @param type $withSum
+     * @return type
+     */
+    public function paginate($con = [], $order = '', $perPage = 10, $having = '', $field = "*", $withSum = false) {
+        // 20240505:自动添加索引，让系统越跑越快
+        $this->dataSdkCheck();
+        $tableName  = $this->table;
+        $pgList     = $this->dataSdk->tableDataPaginate($tableName); 
+        
+
+        return $pgList;
+    }
+    
 
 }
