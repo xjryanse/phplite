@@ -7,7 +7,13 @@ if (!function_exists('dump')) {
     function dump($var) {
         ob_start();
         if(is_string($var)){
-            $var = htmlspecialchars($var);
+             // 尝试解析 JSON，验证是否为合法 JSON 字符串
+            json_decode($var);
+            $isJson = (json_last_error() === JSON_ERROR_NONE);
+            // 非 JSON 字符串才进行 HTML 转义
+            if (!$isJson) {
+                $var = htmlspecialchars($var);
+            }
         }
         var_dump($var);
         $p1 = ob_get_clean();
