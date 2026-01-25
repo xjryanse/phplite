@@ -19,7 +19,8 @@ abstract class CoreBasePDown {
         if(!method_exists($inst, $method)){
             throw new Exception('方法'.$method.'不存在');
         }
-        return call_user_func_array([$inst, $method], $params);
+        $res = call_user_func_array([$inst, $method], $params);
+        return $res;
     }
 
     public function __call($method, $params) {
@@ -50,7 +51,7 @@ abstract class CoreBasePDown {
      */
     public static function commInst($id = 0){
         static::$times ++;
-        if(static::$times > 100 ){
+        if(static::$times > 50 ){
             throw new Exception('死循环');
         }
         // 设定数据库操作sdk实例
