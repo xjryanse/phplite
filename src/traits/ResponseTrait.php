@@ -26,7 +26,9 @@ trait ResponseTrait {
             'device'    => gethostname(),
             'mts'       =>intval(microtime(true) * 1000) - $stime,
             // 微服务接口递归调用日志
-            'serviceArr'=>$serviceTraceArr
+            'serviceArr'=>$serviceTraceArr,
+            // 脚本内存占用
+            'memory'    => formatMemory(memory_get_peak_usage(true)),
         ];
         // $res['sessionid']   = session_id();
         unset($GLOBALS['serviceTraceArr']);
@@ -47,10 +49,12 @@ trait ResponseTrait {
             'device'    => gethostname(),
             'mts'       =>intval(microtime(true) * 1000) - $stime,
             // 微服务接口递归调用日志
-            'serviceArr'=>$serviceTraceArr
+            'serviceArr'=>$serviceTraceArr,
+            // 脚本内存占用
+            'memory'    => formatMemory(memory_get_peak_usage(true)),            
         ];
         unset($GLOBALS['serviceTraceArr']);
-        
+
         return json(array_merge($res, static::devModeRes()));
     }
 
