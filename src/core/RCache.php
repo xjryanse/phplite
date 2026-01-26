@@ -26,7 +26,8 @@ class RCache {
 //        $host = Request::host();
 //        return md5($host);
     }
-    protected function redisInst(){
+    
+    public function redisInst(){
         return Redis::inst()->rdInst($this->uuid);
     }
 
