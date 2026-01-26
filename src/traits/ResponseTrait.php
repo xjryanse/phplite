@@ -29,6 +29,7 @@ trait ResponseTrait {
             'serviceArr'=>$serviceTraceArr
         ];
         // $res['sessionid']   = session_id();
+        unset($GLOBALS['serviceTraceArr']);
         // 拼接开发模式参数
         $json = json(array_merge($res, static::devModeRes()));
         return $json;
@@ -48,6 +49,7 @@ trait ResponseTrait {
             // 微服务接口递归调用日志
             'serviceArr'=>$serviceTraceArr
         ];
+        unset($GLOBALS['serviceTraceArr']);
         
         return json(array_merge($res, static::devModeRes()));
     }
