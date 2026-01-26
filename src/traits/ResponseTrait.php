@@ -17,14 +17,16 @@ trait ResponseTrait {
      * 成功返回
      */
     protected static function succReturn($msg = '请求成功', $data = '', $res = []) {
-        global $stime;        
+        global $stime, $serviceTraceArr;        
         $res['code']        = 0;     //20191205 数据返回的基本结构   三个字段   code=0 ,message='提示', data=>{}
         $res['message']     = $msg;
         $res['data']        = $data;
         // 开发参数
         $res['$dev']       = [
             'device'    => gethostname(),
-            'mts'       =>intval(microtime(true) * 1000) - $stime
+            'mts'       =>intval(microtime(true) * 1000) - $stime,
+            // 微服务接口递归调用日志
+            'serviceArr'=>$serviceTraceArr
         ];
         // $res['sessionid']   = session_id();
         // 拼接开发模式参数
@@ -36,13 +38,15 @@ trait ResponseTrait {
      * 失败返回
      */
     protected static function errReturn($msg = '请求失败', $data = '') {
-        global $stime;
+        global $stime, $serviceTraceArr;   
         $res['code']    = 1;
         $res['message'] = $msg;
         $res['data']    = $data;
         $res['$dev']       = [
             'device'    => gethostname(),
-            'mts'       =>intval(microtime(true) * 1000) - $stime
+            'mts'       =>intval(microtime(true) * 1000) - $stime,
+            // 微服务接口递归调用日志
+            'serviceArr'=>$serviceTraceArr
         ];
         
         return json(array_merge($res, static::devModeRes()));
