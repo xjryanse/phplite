@@ -86,7 +86,7 @@ class WorkerService {
     
     public static function response($code, $msg, $data = [], $res = []){
         $res['code']    = $code;
-        $res['msg']     = $msg;
+        $res['message'] = $msg;
         $res['data']    = $data;
 
         return json_encode($res, JSON_UNESCAPED_UNICODE);
