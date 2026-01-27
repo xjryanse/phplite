@@ -53,23 +53,35 @@ class WorkerService {
             $respJson = static::response(1, 'url路径异常'.count($uArr));
             $conn->send($respJson);
         }
+        
+        try{
 
-        // 拆解模块；控制器；方法
-        $uModule        = $uArr[0];
-        $uController    = $uArr[1];
-        $uAction        = $uArr[2];
+            // 拆解模块；控制器；方法
+            $uModule        = $uArr[0];
+            $uController    = $uArr[1];
+            $uAction        = $uArr[2];
 
-        $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController).'Logic';
-        $resp = $logic::$uAction($param);
+            $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController).'Logic';
+            $resp = $logic::$uAction($param);
 
-        $endTs = microtime(true) * 1000;
-        $res['ts'] = round($endTs) - round($startTs);
+            $endTs = microtime(true) * 1000;
+            $res['ts'] = round($endTs) - round($startTs);
 
-        $respJson = static::response(0, '获取数据成功', $resp, $res);
-        $conn->send($respJson);
-        // 20260114:关闭连接，避免超时
-        $conn->close();
-        return true;
+            $respJson = static::response(0, '获取数据成功', $resp, $res);
+            $conn->send($respJson);
+            // 20260114:关闭连接，避免超时
+            $conn->close();
+            return true;
+        } catch(\Exception $e){
+            // 2026年1月27日：增加异常捕获
+            $mssg = $e->getMessage();
+            $respJson = static::response(1, $mssg);
+            $conn->send($respJson);
+            // 20260114:关闭连接，避免超时
+            $conn->close();
+            return true;
+            
+        }
     }
     
     public static function response($code, $msg, $data = [], $res = []){
