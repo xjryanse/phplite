@@ -77,7 +77,7 @@ class WorkerService {
         $res['msg']     = $msg;
         $res['data']    = $data;
 
-        return json_encode($res);
+        return json_encode($res, JSON_UNESCAPED_UNICODE);
     }
     
 }
