@@ -74,7 +74,8 @@ class PhpFpmEntry {
             // 手动调用异常处理器
             $output = Error::render($e);
         }
-
+        // 让postman返回json
+        header('Content-Type: application/json; charset=utf-8');
         echo $output;
     }
     
