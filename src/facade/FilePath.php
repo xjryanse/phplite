@@ -5,7 +5,7 @@ namespace xjryanse\phplite\facade;
 use xjryanse\phplite\Facade;
 
 /**
- * @see \speedy\core\FilePath
+ * @see \xjryanse\phplite\core\FilePath
  */
 class FilePath extends Facade{
 

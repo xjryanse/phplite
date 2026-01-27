@@ -2,7 +2,7 @@
 
 namespace xjryanse\phplite\entrance;
 
-define('ROOT_PATH', dirname(__DIR__).'/');
+define('ROOT_PATH', dirname($_SERVER['DOCUMENT_ROOT']).'/');
 define('STATIC_PATH', ROOT_PATH . 'public/');
 
 use xjryanse\phplite\phpfpm\facade\RqParams;
