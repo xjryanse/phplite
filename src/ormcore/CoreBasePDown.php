@@ -50,19 +50,16 @@ abstract class CoreBasePDown {
      * @return type
      */
     public static function commInst($id = 0){
-        static::$times ++;
-        if(static::$times > 50 ){
-            throw new Exception('死循环');
-        }
+        global $svBindId;        
         // 设定数据库操作sdk实例
-        $hostBindId = static::$hostBindId;
-        if(!$hostBindId){
+        if(!$svBindId){
+            // 一般是在入口处做全局变量
             throw new Exception('未设置$hostBindId');
         }
-        $dbId       = DbSdk::dbId(static::$dbCate, $hostBindId);
+        $dbId       = DbSdk::dbId(static::$dbCate, $svBindId);
 
         $inst       = OrmCoreBase::inst($id);
-        $dataSdk    = DataSdk::inst($hostBindId)->dbBind($dbId);
+        $dataSdk    = DataSdk::inst($svBindId)->dbBind($dbId);
         $inst->setDataSdk($dataSdk);
         // 设定操作数据表
         $table      = static::getTable();

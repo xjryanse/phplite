@@ -18,5 +18,18 @@ trait OrmcoreBatchTrait {
         $res        = $this->dataSdk->tableBatchDataInsert($tableName, $data);
         return $res;
     }
+    /**
+     * 自动校验，有数据更新，无数据新增，
+     * @param array $data
+     * @return type
+     */
+    public function batchSave(array $data, $uniqueField='id') {
+        $this->dataSdkCheck();
+
+        $tableName  = $this->table;
+        $res        = $this->dataSdk->tableBatchDataSave($tableName, $data, $uniqueField);
+        return $res;
+    }
+    
 
 }
