@@ -5,6 +5,7 @@ namespace xjryanse\phplite\service;
 use Workerman\Worker;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\error\ErrorWorker;
+use Exception;
 /**
  * 2026年1月14日
  * 微服务的workerman启动
@@ -61,8 +62,16 @@ class WorkerService {
             $uController    = $uArr[1];
             $uAction        = $uArr[2];
 
-            $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController).'Logic';
-            $resp = $logic::$uAction($param);
+            // 过渡方法：
+            $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
+            if(class_exists($logic) && method_exists($logic, $uAction)){
+                // 这个是新的，启用
+                $resp = static::call($uArr, $param);
+            } else {
+                // 这个是原来的，逐步废弃
+                $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController).'Logic';
+                $resp = $logic::$uAction($param);
+            }
 
             $endTs = microtime(true) * 1000;
             $res['ts'] = round($endTs) - round($startTs);
@@ -82,6 +91,33 @@ class WorkerService {
             return true;
             
         }
+    }
+    /**
+     * 封装调用逻辑
+     * @param type $uArr
+     * @param type $post
+     * @return type
+     * @throws Exception
+     */
+    public static function call($uArr, $post){
+        $uModule        = $uArr[0];
+        $uController    = $uArr[1];
+        $uAction        = $uArr[2];
+
+        $logicClass = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
+        if(!class_exists($logicClass)){
+            throw new Exception('类库'.$logicClass.'不存在');
+        }
+
+        $logic  = new $logicClass();
+        // 加载初始化方法
+        if(method_exists($logicClass, 'initialize')){
+            $logic->initialize($post);
+        }
+        if(!method_exists($logicClass, $uAction)){
+            throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
+        }
+        return $logic->$uAction($post);
     }
     
     public static function response($code, $msg, $data = [], $res = []){
