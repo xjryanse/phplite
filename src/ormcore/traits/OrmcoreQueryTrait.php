@@ -46,6 +46,17 @@ trait OrmcoreQueryTrait {
         }
         return $lists;
     }
+    /**
+     * 2026年1月29日
+     * @param type $mainIds:例如店铺id
+     * @param type $field   例如shop_id
+     * @return type
+     */
+    public function dtlCount($mainIds, $field){
+        $tableName      = $this->table;
+        $res = $this->dataSdk->tableDataDtlCount($tableName, $mainIds, $field);
+        return $res;
+    }
     
     /**
      * 2026年1月22日
@@ -79,15 +90,17 @@ trait OrmcoreQueryTrait {
         return $pgList;
     }
     
-
+    public function fieldArr(){
+        $this->dataSdkCheck();
+        $tableName  = $this->table;
+        return $this->dataSdk->tableFieldArr($tableName); 
+    }
     
     /**
      * 获取表字段信息
      */
     public function fields(){
-        $this->dataSdkCheck();
-        $tableName  = $this->table;
-        $fieldArr = $this->dataSdk->tableFieldArr($tableName); 
+        $fieldArr = $this->fieldArr(); 
         return array_column($fieldArr, 'COLUMN_NAME');
     }
 }

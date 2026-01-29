@@ -33,4 +33,27 @@ trait OrmcoreTrait {
         return true;
     }
 
+    /**
+     * 2026年1月29日 数据保存前转换
+     */
+    public function dataArrPreCov($dataArr){
+        $fields = $this->fieldArr();
+        $tmpArr = [];
+        foreach($dataArr as &$d){
+            $tmp = [];
+            foreach($fields as &$v){
+                if(!isset($d[$v['COLUMN_NAME']])){
+                    continue;
+                }
+                $value = $d[$v['COLUMN_NAME']];
+                // 如果是boolean,转01；
+                if(is_bool($value)){
+                    $value = intval($value);
+                }
+                $tmp[$v['COLUMN_NAME']] = $value;
+            }
+            $tmpArr[] = $tmp;
+        }
+        return $tmpArr;
+    }
 }
