@@ -84,7 +84,7 @@ trait OrmcoreQueryTrait {
         $tableName  = $this->table;
         
         $sMts       = microtime(true) * 1000;
-        $pgList     = $this->dataSdk->tableDataPaginate($tableName); 
+        $pgList     = $this->dataSdk->tableDataPaginate($tableName, $order, $con); 
         // 耗时分析
         $pgList['mts']  = round(microtime(true) * 1000 - $sMts);
         return $pgList;

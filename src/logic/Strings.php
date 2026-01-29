@@ -2,7 +2,6 @@
 
 namespace xjryanse\phplite\logic;
 
-use Exception;
 /**
  * 字符串处理函数
  */
@@ -79,7 +78,7 @@ class Strings {
      * @param type $assoc
      * @return boolean
      */
-    public static function isJson(string $dataStr = '', $assoc = false) {
+    public static function isJson($dataStr = '', $assoc = false) {
         $data = $dataStr ? json_decode($dataStr, $assoc) : $dataStr;
         if (($data && (is_object($data))) || is_array($data)) {
             return true;
