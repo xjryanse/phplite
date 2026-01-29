@@ -32,5 +32,6 @@ class OrmCoreBase {
     public function setTable($table){
         $this->table = $table;
     }
+
     
 }

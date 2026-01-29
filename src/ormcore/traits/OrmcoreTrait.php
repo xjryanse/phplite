@@ -29,8 +29,8 @@ trait OrmcoreTrait {
         $tableName  = $this->table;
         $data['id'] = $this->uuid;
 
-        $res = $this->dataSdk->tableDataUpdate($tableName, $data);
-        return $res;
+        $this->dataSdk->tableDataUpdate($tableName, $data);
+        return true;
     }
 
 }

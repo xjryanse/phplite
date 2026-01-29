@@ -53,11 +53,11 @@ trait OrmcoreBatchTrait {
         return $res;
     }
     /**
-     * 自动校验，有数据更新，无数据新增，
+     * 数据覆盖，不删除
      * @param array $data
      * @return type
      */
-    public function batchSave(array $data, $uniqueField='id') {
+    public function batchCover(array $data, $uniqueField='id') {
         if($this->uuid){
             throw new Exception('不支持的实例uuid,需为空或0'.$this->uuid);
         }
@@ -66,10 +66,34 @@ trait OrmcoreBatchTrait {
         // 【1】从源系统中查询数据
         $ids        = Arrays2d::uniqueColumn($data, $uniqueField);
         $con        = [];
-        // $con[]      = [$uniqueField,'in',$ids];
+        $con[]      = [$uniqueField,'in',$ids];
         $lists      = static::conList($con);
         //【2】进行比对动作
         $diffs      = Arrays2d::calDiffs($data, $lists);
+        //【3】执行写入（因为精准查询了，所以toDelete为空，不会删除数据）
+        return $this->batchDiffsDeal($diffs);
+    }
+    
+    /**
+     * [全量同步] 覆盖+新增+删冗余；全量对齐
+     * @param array $data
+     * @return type
+     */
+    public function batchSyncAll(array $data) {
+        if($this->uuid){
+            throw new Exception('不支持的实例uuid,需为空或0'.$this->uuid);
+        }
+        $this->dataSdkCheck();
+
+        // 【1】从源系统中查询数据
+        $con        = [];
+        $lists      = static::conList($con);
+        //【2】进行比对动作
+        $diffs      = Arrays2d::calDiffs($data, $lists);
+        return $this->batchDiffsDeal($diffs);
+    }
+
+    private function batchDiffsDeal($diffs){
         // 解构
         ['toAdd' => $toAdd, 'toUpdate' => $toUpdate, 'toDelete' => $toDelete] = $diffs;
         // 执行toAdd数据写入动作；
@@ -79,9 +103,6 @@ trait OrmcoreBatchTrait {
             $toDeleteIds = Arrays2d::uniqueColumn($toDelete, 'id');
             $this->batchDelete($toDeleteIds);
         }
-        
         return true;
     }
-    
-
 }

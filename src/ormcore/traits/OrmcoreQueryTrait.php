@@ -2,10 +2,8 @@
 
 namespace xjryanse\phplite\ormcore\traits;
 
-use xjryanse\servicesdk\data\DataSdk;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\Arrays2d;
-use Exception;
 /**
  * 模型映射查询逻辑（有带数据库类型查表）
  */
@@ -82,4 +80,14 @@ trait OrmcoreQueryTrait {
     }
     
 
+    
+    /**
+     * 获取表字段信息
+     */
+    public function fields(){
+        $this->dataSdkCheck();
+        $tableName  = $this->table;
+        $fieldArr = $this->dataSdk->tableFieldArr($tableName); 
+        return array_column($fieldArr, 'COLUMN_NAME');
+    }
 }
