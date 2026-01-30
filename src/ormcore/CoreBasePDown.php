@@ -54,7 +54,7 @@ abstract class CoreBasePDown {
         // 设定数据库操作sdk实例
         if(!$svBindId){
             // 一般是在入口处做全局变量
-            throw new Exception('未设置$hostBindId');
+            throw new Exception(static::class.'未设置$hostBindId');
         }
         $dbId       = DbSdk::dbId(static::$dbCate, $svBindId);
 
