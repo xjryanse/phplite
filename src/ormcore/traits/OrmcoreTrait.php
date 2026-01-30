@@ -18,6 +18,21 @@ trait OrmcoreTrait {
         $res        = $this->dataSdk->tableDataSave($tableName, $data);
         return $res;
     }
+    
+    /**
+     * 2026年1月19日
+     * @param array $data
+     * @return type
+     */
+    public function insert(array $data){
+        $this->dataSdkCheck();
+        if($this->uuid){
+            throw new Exception('请使用空id实例');
+        }
+        $tableName  = $this->table;
+        $this->dataSdk->tableDataInsert($tableName, $data);
+        return true;
+    }
     /**
      * 2026年1月19日
      * @param array $data
