@@ -430,4 +430,41 @@ class Strings {
         return preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
     }
     
+    /**
+     * 按位置拆分成数组
+     * @param string $str
+     * @param array $splitRule
+     *  $idSplit = [
+            5=>'yearmonth',
+            24=>'user_id'
+        ];
+     * 
+     * @return array
+     */
+    public static function splitByPosition(string $str, array $splitRule): array {
+        $result     = [];
+        $prevEnd    = 0; // 上一个字段的结束位置（初始为0，即从第1位开始）
+        $strLength  = strlen($str); // 原始字符串总长度
+
+        foreach ($splitRule as $endPos => $fieldName) {
+            // 计算当前字段的起始位置（上一个结束位置）和截取长度
+            $start = $prevEnd;
+            $length = $endPos - $prevEnd;
+
+            // 边界校验：若结束位置超过字符串长度，只截取剩余部分
+            if ($endPos > $strLength) {
+                $result[$fieldName] = substr($str, $start);
+                $prevEnd = $strLength;
+                continue;
+            }
+
+            // 按位置截取：从start开始，截取length长度
+            $result[$fieldName] = substr($str, $start, $length);
+            // 更新上一个结束位置为当前结束位置
+            $prevEnd = $endPos;
+        }
+
+        return $result;
+    }
+    
 }
