@@ -4,6 +4,7 @@ namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\Arrays2d;
+use xjryanse\phplite\logic\SnowFlake;
 /**
  * 模型映射查询逻辑（有带数据库类型查表）
  */
@@ -103,4 +104,51 @@ trait OrmcoreQueryTrait {
         $fieldArr = $this->fieldArr(); 
         return array_column($fieldArr, 'COLUMN_NAME');
     }
+    /**
+     * 2026年2月1日
+     * @param type $data
+     * @throws Exception
+     */
+    public function commGetIdEG($data, $ifEmptyId = ''){
+        if($this->uuid){
+            throw new Exception('请使用空实例');
+        }
+        $id             = static::commGetId($data);
+        if (!$id) {
+            $data['id'] = $ifEmptyId ? : SnowFlake::generateParticle();
+            static::inst()->insert($data);
+            $id         = $data['id'];
+        }
+        return $id;
+    }
+
+    /**
+     * 2026年2月1日
+     * @param type $data
+     * @return string
+     */
+    public static function commGetId($data) {
+        $con        = [];
+        foreach ($data as $k => $v) {
+            $con[]  = [$k, '=', $v];
+        }
+
+        $info = static::inst()->conFind($con);
+        if($info){
+            return $info['id'];
+        }
+        return '';
+        // TODO:内存中获取
+        // $id = self::ramValue('id',$con);
+        // return $id;
+    }
+
+
+    
+    
+    
+    
+
+
+    
 }
