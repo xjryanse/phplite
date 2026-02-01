@@ -69,6 +69,12 @@ trait OrmcoreQueryTrait {
         $tableName              = $this->table;
         return $this->dataSdk->tableDataConFind($tableName, $con);
     }
+    
+    protected $uTableId;
+    public function setUTableId($uTableId){
+        $this->uTableId = $uTableId;
+    }
+    
     /**
      * 2026年1月25日
      * @param type $con
@@ -79,13 +85,15 @@ trait OrmcoreQueryTrait {
      * @param type $withSum
      * @return type
      */
-    public function paginate($con = [], $order = '', $perPage = 10, $having = '', $field = "*", $withSum = false) {        
+    public function paginate($con = [], $order = '', $perPage = 10, $having = '', $field = "*", $withSum = false) {
         // 20240505:自动添加索引，让系统越跑越快
         $this->dataSdkCheck();
         $tableName  = $this->table;
         
         $sMts       = microtime(true) * 1000;
-        $pgList     = $this->dataSdk->tableDataPaginate($tableName, $order, $con); 
+        
+        $param['uTableId'] = $this->uTableId;
+        $pgList     = $this->dataSdk->tableDataPaginate($tableName, $order, $con, $param); 
         // 耗时分析
         $pgList['mts']  = round(microtime(true) * 1000 - $sMts);
         return $pgList;
