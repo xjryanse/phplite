@@ -49,6 +49,20 @@ trait OrmcoreTrait {
     }
 
     /**
+     * 2026年1月19日
+     * @param array $data
+     * @return type
+     */
+    public function delete(){
+        $this->dataSdkCheck();
+        
+        $tableName  = $this->table;
+
+        $this->dataSdk->tableDataDelete($tableName, $this->uuid);
+        return true;
+    }
+    
+    /**
      * 2026年1月29日 数据保存前转换
      */
     public function dataArrPreCov($dataArr){
