@@ -9,6 +9,7 @@ use xjryanse\phplite\phpfpm\facade\RqParams;
 use xjryanse\phplite\facade\Request;
 use xjryanse\phplite\facade\Route;
 use xjryanse\phplite\phpfpm\Error;
+use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\App;
 
 /**
@@ -21,8 +22,6 @@ class PhpFpmEntry {
      * @global type $stime
      */
     public static function start(){
-        // sessionid初始化：最开始
-        static::sessionInit();
         // 初始化脚本开始时间
         global $stime;
         $stime= intval(microtime(true) * 1000);
@@ -36,9 +35,9 @@ class PhpFpmEntry {
     /**
      * 程序最开始调用
      */
-    private static function sessionInit(){
+    public static function sessionInit(){
         //2026年2月2日
-        $headerSessionId = $_SERVER['HTTP_SESSIONID'];
+        $headerSessionId = Arrays::value($_SERVER, 'HTTP_SESSIONID');
         if($headerSessionId){
             session_id($headerSessionId);
         }
