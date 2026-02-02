@@ -42,7 +42,7 @@ class Query {
         // curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
 
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
         if ($data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $dataJson);
