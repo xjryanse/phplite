@@ -21,6 +21,8 @@ class PhpFpmEntry {
      * @global type $stime
      */
     public static function start(){
+        // sessionid初始化：最开始
+        static::sessionInit();
         // 初始化脚本开始时间
         global $stime;
         $stime= intval(microtime(true) * 1000);
@@ -31,6 +33,18 @@ class PhpFpmEntry {
         // 【3】执行主程序
         static::main();
     }
+    /**
+     * 程序最开始调用
+     */
+    private static function sessionInit(){
+        //2026年2月2日
+        $headerSessionId = $_SERVER['HTTP_SESSIONID'];
+        if($headerSessionId){
+            session_id($headerSessionId);
+        }
+        session_start();
+    }
+    
     /**
      * 处理跨域
      */
