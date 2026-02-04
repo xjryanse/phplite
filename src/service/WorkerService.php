@@ -64,7 +64,10 @@ class WorkerService {
 
             // 过渡方法：
             $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
-            if(class_exists($logic) && method_exists($logic, $uAction)){
+            if(class_exists($logic)){
+                if(!method_exists($logic, $uAction)){
+                    throw new Exception('类'.$logic.'方法'.$uAction.'不存在');
+                }
                 // 这个是新的，启用
                 $resp = static::call($uArr, $param);
             } else {
