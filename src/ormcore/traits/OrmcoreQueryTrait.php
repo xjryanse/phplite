@@ -38,10 +38,10 @@ trait OrmcoreQueryTrait {
      * @param type $con
      * @return type
      */
-    public function conList($con = [],$orderBy=''){
+    public function conList($con = [],$orderBy='', $limit = 0){
         $this->dataSdkCheck();
         $tableName              = $this->table;
-        $lists = $this->dataSdk->tableDataConList($tableName, $con, $orderBy);
+        $lists = $this->dataSdk->tableDataConList($tableName, $con, $orderBy, $limit);
         if($orderBy){
             $lists = Arrays2d::sort($lists, $orderBy);
         }
@@ -91,8 +91,8 @@ trait OrmcoreQueryTrait {
         $tableName  = $this->table;
         
         $sMts       = microtime(true) * 1000;
-        $param['per_page']   = $perPage;
-        $param['uTableId']  = $this->uTableId;
+        
+        $param['uTableId'] = $this->uTableId;
         $pgList     = $this->dataSdk->tableDataPaginate($tableName, $order, $con, $param); 
         // 耗时分析
         $pgList['mts']  = round(microtime(true) * 1000 - $sMts);
