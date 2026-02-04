@@ -38,7 +38,7 @@ class PhpFpmEntry {
     public static function sessionInit(){
         //2026年2月2日
         $headerSessionId = Arrays::value($_SERVER, 'HTTP_SESSIONID');
-        if($headerSessionId){
+        if($headerSessionId && $headerSessionId <>'null'){
             session_id($headerSessionId);
         }
         global $sessionId;
