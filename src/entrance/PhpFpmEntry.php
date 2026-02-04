@@ -41,6 +41,8 @@ class PhpFpmEntry {
         if($headerSessionId){
             session_id($headerSessionId);
         }
+        global $sessionId;
+        $sessionId = session_id();
         session_start();
     }
     

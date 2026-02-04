@@ -17,10 +17,11 @@ trait ResponseTrait {
      * 成功返回
      */
     protected static function succReturn($msg = '请求成功', $data = '', $res = []) {
-        global $stime, $serviceTraceArr;        
+        global $stime, $serviceTraceArr, $sessionId;        
         $res['code']        = 0;     //20191205 数据返回的基本结构   三个字段   code=0 ,message='提示', data=>{}
         $res['message']     = $msg;
         $res['data']        = $data;
+        $res['sessionid']   = $sessionId;
         // 开发参数
         $res['$dev']       = [
             'device'    => gethostname(),
@@ -41,10 +42,11 @@ trait ResponseTrait {
      * 失败返回
      */
     protected static function errReturn($msg = '请求失败', $data = '') {
-        global $stime, $serviceTraceArr;   
-        $res['code']    = 1;
-        $res['message'] = $msg;
-        $res['data']    = $data;
+        global $stime, $serviceTraceArr, $sessionId;
+        $res['code']        = 1;
+        $res['message']     = $msg;
+        $res['data']        = $data;
+        $res['sessionid']   = $sessionId;
         $res['$dev']       = [
             'device'    => gethostname(),
             'mts'       =>intval(microtime(true) * 1000) - $stime,
