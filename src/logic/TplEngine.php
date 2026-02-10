@@ -2,6 +2,7 @@
 
 namespace xjryanse\phplite\logic;
 
+use Exception;
 /**
  * 模板引擎
  * 
@@ -88,7 +89,12 @@ class TplEngine {
         // 匹配到目标
         $itemTemplate = trim($matches[4]);
         $oArr = [];
-        
+        if(!is_array($array)){
+            dump($this->data);
+            dump($matches);
+            
+            throw new Exception('不是有效数组');
+        }
         foreach ($array as $k=>$item) {
             $data = [];
             $data[$matches[2]] = $k;

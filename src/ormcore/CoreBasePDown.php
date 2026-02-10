@@ -32,17 +32,6 @@ abstract class CoreBasePDown {
         return call_user_func_array([$inst, $method], $params);
     }
 
-    protected static $hostBindId;
-    /**
-     * 设定外部绑定id
-     */
-    public static function setHostBind($hostBindId){
-        static::$hostBindId = $hostBindId;
-    }
-    public static function getHostBindId(){
-        return static::$hostBindId;
-    }
-    
     protected static $times = 0;
     /**
      * 覆盖下级inst
