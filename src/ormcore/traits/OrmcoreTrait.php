@@ -2,21 +2,26 @@
 
 namespace xjryanse\phplite\ormcore\traits;
 
+use xjryanse\phplite\logic\SnowFlake;
+use xjryanse\servicesdk\entry\EntrySdk;
 
 /**
  * 模型映射查询逻辑
  */
 trait OrmcoreTrait {
     /**
-     * 核心模型映射的数据表
+     * 2026年2月10日：更新
      * @return type
      */
     public function save(array $data) {
-        $this->dataSdkCheck();
-
-        $tableName  = $this->table;
-        $res        = $this->dataSdk->tableDataSave($tableName, $data);
-        return $res;
+        if(isset($data['id']) && $data['id']){
+            // 更新
+            return static::inst($data['id'])->update($data);
+        } else {
+            // 新增
+            $data['id'] = SnowFlake::generateParticle();
+            return static::inst()->insert($data);
+        }
     }
     
     /**
@@ -29,6 +34,11 @@ trait OrmcoreTrait {
         if($this->uuid){
             throw new Exception('请使用空id实例');
         }
+        $fields     = $this->fields();
+        if(in_array('company_id', $fields)){
+            $data['company_id'] = EntrySdk::globalSvBindCompanyId();
+        }
+
         $tableName  = $this->table;
         $this->dataSdk->tableDataInsert($tableName, $data);
         return true;
