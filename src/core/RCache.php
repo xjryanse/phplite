@@ -22,9 +22,9 @@ class RCache {
      * 20250226:key前缀，用于区分
      */
     protected static function preFix() {
-        return md5(ROOT_PATH);
-//        $host = Request::host();
-//        return md5($host);
+        // 2026年2月12日：因为上线微服务，有些数据是服务间共用，探索更高效的数据共享方式
+        return '';
+        // return md5(ROOT_PATH);
     }
     
     public function redisInst(){
