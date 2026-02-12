@@ -93,7 +93,7 @@ trait OrmcoreBatchTrait {
         return $this->batchDiffsDeal($diffs);
     }
 
-    private function batchDiffsDeal($diffs){
+    public function batchDiffsDeal($diffs){
         // 解构
         ['toAdd' => $toAdd, 'toUpdate' => $toUpdate, 'toDelete' => $toDelete] = $diffs;
         // 执行toAdd数据写入动作；
