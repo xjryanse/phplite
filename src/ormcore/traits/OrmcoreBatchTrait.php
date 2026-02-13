@@ -79,14 +79,13 @@ trait OrmcoreBatchTrait {
      * @param array $data
      * @return type
      */
-    public function batchSyncAll(array $data) {
+    public function batchSyncAll(array $data, $con = []) {
         if($this->uuid){
             throw new Exception('不支持的实例uuid,需为空或0'.$this->uuid);
         }
         $this->dataSdkCheck();
 
         // 【1】从源系统中查询数据
-        $con        = [];
         $lists      = static::conList($con);
         //【2】进行比对动作
         $diffs      = Arrays2d::calDiffs($data, $lists);
