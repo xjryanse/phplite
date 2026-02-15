@@ -12,6 +12,9 @@ use Exception;
 abstract class CoreBasePDown {
     
     use \xjryanse\phplite\traits\InstMultiTrait;
+    // 控制器端调用封装通用更新方法
+    use \xjryanse\phplite\ormcore\coreBase\OrmcoreCommTrait;
+    
     // 调用实际类的方法
     public static function __callStatic($method, $params) {
         $inst = static::commInst();
