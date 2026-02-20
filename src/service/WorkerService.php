@@ -20,7 +20,11 @@ class WorkerService {
         static::initOnWorkerStart();
         static::initOnMessage();
         // 开发模式代码更新
-        static::simpleHotReload();
+        if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+            static::simpleHotReload();
+        } else {
+            echo "【调试】当前为Windows系统，跳过热重载功能\n";
+        }
         
         Worker::runAll();
     }
