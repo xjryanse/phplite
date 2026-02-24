@@ -85,7 +85,7 @@ trait OrmcoreQueryTrait {
      * @param type $withSum
      * @return type
      */
-    public function paginate($con = [], $order = '', $perPage = 10, $having = '', $field = "*", $withSum = false) {
+    public function paginate($con = [], $order = '', $param = []) {
         // 20240505:自动添加索引，让系统越跑越快
         $this->dataSdkCheck();
         $tableName  = $this->table;
