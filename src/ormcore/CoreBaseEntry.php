@@ -11,6 +11,8 @@ abstract class CoreBaseEntry {
     
     use \xjryanse\phplite\traits\InstMultiTrait;
 
+    use \xjryanse\phplite\ormcore\coreBase\OrmcoreCommTrait;
+    
     public function instInit(){
         static::commInst($this->uuid);
     }

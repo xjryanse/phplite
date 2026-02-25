@@ -50,5 +50,15 @@ trait OrmcoreCommTrait {
         
         
     }
+    /**
+     * 
+     * @param type $param
+     * @return type
+     */
+    public static function commPaginate($param){
+        $data   = Arrays::value($param, 'table_data') ? : $param;
+        $res    = static::inst()->paginate();
+        return $res;
+    }
     
 }
