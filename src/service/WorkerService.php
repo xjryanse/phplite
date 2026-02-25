@@ -73,7 +73,8 @@ class WorkerService {
             // 过渡方法：
             $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
             if(class_exists($logic)){
-                if(!method_exists($logic, $uAction)){
+                $commMethods = ['get','paginate','update'];
+                if(!method_exists($logic, $uAction)  && !in_array($uAction, $commMethods)){
                     throw new Exception('类'.$logic.'方法'.$uAction.'不存在');
                 }
                 // 这个是新的，启用
@@ -125,9 +126,11 @@ class WorkerService {
         if(method_exists($logicClass, 'initialize')){
             $logic->initialize($post);
         }
-        if(!method_exists($logicClass, $uAction)){
+        $commMethods = ['get','paginate','update'];
+        if(!method_exists($logicClass, $uAction)  && !in_array($uAction, $commMethods)){
             throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
         }
+        
         return $logic->$uAction($post);
     }
     

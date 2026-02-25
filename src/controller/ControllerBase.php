@@ -28,14 +28,12 @@ abstract class ControllerBase {
         if(!class_exists($logicClass)){
             throw new Exception('类库'.$logicClass.'不存在');
         }
-        
         $post   = Request::post();
         $logic  = new $logicClass();
         // 加载初始化方法
         if(method_exists($logicClass, 'initialize')){
             $logic->initialize($post);
         }
-        
         $commMethods = ['get','paginate','update'];
         if(!method_exists($logicClass, $uAction) && !in_array($uAction, $commMethods)){
             throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
