@@ -60,5 +60,18 @@ trait OrmcoreCommTrait {
         $res    = static::inst()->paginate();
         return $res;
     }
-    
+    /**
+     * 由控制器端调用的通用删除方法
+     * @param type $param
+     * @return type
+     * @throws Exception
+     */
+    public static function commDelete($param){
+        $data   = Arrays::value($param, 'table_data') ? : $param;
+        $id = Arrays::value($data, 'id');
+        if(!$id){
+            throw new Exception('id必须');
+        }
+        return static::inst($id)->delete();
+    }
 }
