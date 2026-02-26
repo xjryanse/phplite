@@ -4,6 +4,7 @@ namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\phplite\logic\SnowFlake;
 use xjryanse\servicesdk\entry\EntrySdk;
+use Exception;
 
 /**
  * 模型映射查询逻辑
@@ -77,6 +78,10 @@ trait OrmcoreTrait {
      */
     public function dataArrPreCov($dataArr){
         $fields = $this->fieldArr();
+        if(!$fields){
+            throw new Exception('字段为空，请排查'.$this->table);
+        }
+
         $tmpArr = [];
         foreach($dataArr as &$d){
             $tmp = [];
