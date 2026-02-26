@@ -3,6 +3,8 @@
 namespace xjryanse\phplite\controller;
 
 use xjryanse\phplite\logic\Arrays;
+use xjryanse\phplite\logic\Controller as controllerLogic;
+
 use Exception;
 /**
  * 数据表，常规逻辑
@@ -19,7 +21,7 @@ abstract class LogicABase {
     // 调用实际类的方法
     public function __call($method, $params) {
         // 这里是处理公共
-        $commMethods = ['get','paginate','update'];
+        $commMethods = controllerLogic::commMethods();
         if(in_array($method, $commMethods)){
             $mtTsr = 'comm'.ucfirst($method);
             return $this->coreClass()::$mtTsr($params[0]);

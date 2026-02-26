@@ -6,6 +6,7 @@ use Workerman\Worker;
 use Workerman\Timer;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\error\ErrorWorker;
+use xjryanse\phplite\logic\Controller as controllerLogic;
 use Exception;
 /**
  * 2026年1月14日
@@ -73,7 +74,7 @@ class WorkerService {
             // 过渡方法：
             $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
             if(class_exists($logic)){
-                $commMethods = ['get','paginate','update'];
+                $commMethods = controllerLogic::commMethods();
                 if(!method_exists($logic, $uAction)  && !in_array($uAction, $commMethods)){
                     throw new Exception('类'.$logic.'方法'.$uAction.'不存在');
                 }
@@ -126,7 +127,7 @@ class WorkerService {
         if(method_exists($logicClass, 'initialize')){
             $logic->initialize($post);
         }
-        $commMethods = ['get','paginate','update'];
+        $commMethods = controllerLogic::commMethods();
         if(!method_exists($logicClass, $uAction)  && !in_array($uAction, $commMethods)){
             throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
         }
