@@ -79,7 +79,7 @@ trait OrmcoreTrait {
     public function dataArrPreCov($dataArr){
         $fields = $this->fieldArr();
         if(!$fields){
-            throw new Exception('字段为空，请排查'.$this->table);
+            throw new Exception($this->table.'字段为空，库'.$this->dbId);
         }
 
         $tmpArr = [];
