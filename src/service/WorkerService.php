@@ -14,11 +14,16 @@ use Exception;
  */
 class WorkerService {
     protected static $tcp;
+    
+    public static function tcp(){
+        return static::$tcp;
+    }
 
     public static function start($port, $ip='0.0.0.0'){
-        $url = 'tcp://' . $ip . ':' . $port;
-        static::$tcp = new Worker($url);
-        static::initOnWorkerStart();
+        static::tcpInit($port, $ip);
+
+        static::initOnWorkerStart();        
+        
         static::initOnMessage();
         // 开发模式代码更新
         if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
@@ -26,7 +31,15 @@ class WorkerService {
         } else {
             echo "【调试】当前为Windows系统，跳过热重载功能\n";
         }
-        
+        static::run();
+    }
+    
+    public static function tcpInit($port, $ip='0.0.0.0'){
+        $url = 'tcp://' . $ip . ':' . $port;
+        static::$tcp = new Worker($url);
+    }
+    
+    public static function run(){
         Worker::runAll();
     }
 
@@ -37,7 +50,7 @@ class WorkerService {
         };
     }
     
-    protected static function initOnMessage(){
+    public static function initOnMessage(){
         // 收到其他服务的调用请求时，处理业务逻辑
         self::$tcp->onMessage = function ($conn, $data) {
             // 1. 注册异常处理：传入Workerman连接对象
@@ -146,7 +159,7 @@ class WorkerService {
     /**
      * 极简版热重载（支持监听子目录文件）
      */
-    protected static function simpleHotReload() {
+    public static function simpleHotReload() {
         $watchDir = rtrim(ROOT_PATH . 'app', DIRECTORY_SEPARATOR);
         echo "【调试】监听目录：{$watchDir}\n";
 
