@@ -9,6 +9,15 @@ use Exception;
  * 这里封装控制器通用的更新方法
  */
 trait OrmcoreCommTrait {
+    
+    public static function commGet($param){
+        $data   = Arrays::value($param, 'table_data') ? : $param;
+        $id = Arrays::value($data, 'id');
+        if(!$id){
+            return [];
+        }
+        return static::inst($id)->get();
+    }    
     /**
      * 由控制器端调用的通用更新方法
      * @param type $param
