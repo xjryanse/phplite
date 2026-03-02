@@ -4,6 +4,7 @@ namespace xjryanse\phplite\ormcore\coreBase;
 
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\SnowFlake;
+use xjryanse\phplite\logic\ModelQueryCon;
 use Exception;
 /**
  * 这里封装控制器通用的更新方法
@@ -66,7 +67,9 @@ trait OrmcoreCommTrait {
      */
     public static function commPaginate($param){
         $data   = Arrays::value($param, 'table_data') ? : $param;
-        $res    = static::inst()->paginate();
+        $fields = property_exists(static::class, 'qFields') ? static::$qFields : [];
+        $con    = ModelQueryCon::queryCon($data, $fields);
+        $res    = static::inst()->paginate($con);
         return $res;
     }
     /**
