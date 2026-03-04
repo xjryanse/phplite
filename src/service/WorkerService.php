@@ -73,7 +73,7 @@ class WorkerService {
         $uArr   = explode('/',$url);
 
         if(count($uArr) <> 3){
-            $respJson = static::response(1, 'url路径异常'.count($uArr));
+            $respJson = static::response(1, 'url异常:'.count($uArr).'路径:'.$url);
             $conn->send($respJson);
         }
         
