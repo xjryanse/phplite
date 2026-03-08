@@ -10,16 +10,16 @@ use Exception;
 class Arrays {
 
     /**
-     * 数组取值
+     * 数组取值（不修改原数组，按值传参即可）
      */
-    public static function value(&$array, $key, $default = '') {
+    public static function value($array, $key, $default = '') {
         return $array && isset($array[$key]) ? $array[$key] : $default;
     }
 
     /**
      * 20250718:转成数组
      */
-    public static function valueArr(&$array, $key){
+    public static function valueArr($array, $key){
         $val = static::value($array, $key);
         if(!$val){
             return [];
@@ -198,13 +198,20 @@ class Arrays {
             if (!isset($data[$key])) {
                 return false;
             }
-            // 等于号和不等于号
+            // 等于号和不等于号（显式比较，避免 eval 带来的安全与转义问题）
             if (in_array($sign, ['=', '<>', '>', '<', '>=', '<='])) {
-                //符号替换
-                $signN = Arrays::value($signReplace, $sign, $sign);
-                //有一个不匹配，则不匹配
-                $evalStr = 'return \'' . $data[$key] . '\' ' . $signN . ' \'' . $value . '\';';
-                if (!eval($evalStr)) {
+                $a = $data[$key];
+                $b = $value;
+                $match = false;
+                switch ($sign) {
+                    case '=':  $match = $a == $b; break;
+                    case '<>': $match = $a != $b; break;
+                    case '>':  $match = $a > $b; break;
+                    case '<':  $match = $a < $b; break;
+                    case '>=': $match = $a >= $b; break;
+                    case '<=': $match = $a <= $b; break;
+                }
+                if (!$match) {
                     return false;
                 }
             }

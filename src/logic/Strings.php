@@ -203,13 +203,13 @@ class Strings {
         return substr(strrev($str), 0, strlen($end)) === strrev($end);
     }
     /**
-     * 20230711:字符串是否包含子字符串
-     * @param type $string
-     * @param type $substring
-     * @return type
+     * 字符串是否包含子字符串
+     * @param string $string
+     * @param string $substring
+     * @return bool
      */
-    public static function hasStr($string, $substring){
-        return $string ? strpos($string, $substring) : $string;
+    public static function hasStr($string, $substring) {
+        return $string !== '' && $substring !== '' && strpos($string, $substring) !== false;
     }
     /**
      * 20231207:判断是否有空格

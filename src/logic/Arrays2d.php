@@ -2,9 +2,9 @@
 namespace xjryanse\phplite\logic;
 
 use xjryanse\phplite\logic\Arrays;
-use orm\system\SystemFile;
 /**
  * 二维数组处理逻辑
+ * 注：picFieldCov / multiPicFieldCov / mixPicFieldCov 依赖 orm\system\SystemFile 时在运行时检测，无该类则跳过图片转换
  */
 class Arrays2d
 {
@@ -328,74 +328,63 @@ class Arrays2d
         return array_values($r);
     }
     
-    /***以下部分有耦合SystemFileService类，和db方法，是否进行拆分比较科学？？20220305******************************************************************/
     /**
-     * 二维数组，图像字段，id转数组
+     * 二维数组，图像字段，id转数组（依赖 orm\system\SystemFile，不存在则该类时不转换）
      */
-    public static function picFieldCov(&$data,$picFields = []){
-        if(!$picFields){
+    public static function picFieldCov(&$data, $picFields = []){
+        if (!$picFields || !class_exists('\orm\system\SystemFile', false)) {
             return $data;
         }
         $picIds = [];
-        foreach($picFields as &$picField){
-            $picIds = array_merge($picIds, array_column($data,$picField));
+        foreach ($picFields as $picField) {
+            $picIds = array_merge($picIds, array_column($data, $picField));
         }
-        if(array_unique($picIds)){
-            //根据图像id，提取已有的图像列表
-            $picArr = SystemFile::filesWithSys($picIds);
-
-            $picObj = static::fieldSetKey($picArr, 'id');
-            //拼接图像
-            foreach($data as &$v){
-                foreach($picFields as &$picField){
-                    // 20220807，非字符串不转
-                    $v[$picField] = isset($picObj[$v[$picField]]) ? $picObj[$v[$picField]] : [];
-                }
+        $picIds = array_filter(array_unique($picIds));
+        if (!$picIds) {
+            return $data;
+        }
+        $picArr = \orm\system\SystemFile::filesWithSys($picIds);
+        $picObj = static::fieldSetKey($picArr, 'id');
+        foreach ($data as &$v) {
+            foreach ($picFields as $picField) {
+                $v[$picField] = isset($picObj[$v[$picField]]) ? $picObj[$v[$picField]] : [];
             }
         }
-
         return $data;
     }
-    /*****多图*****/
-    public static function multiPicFieldCov(&$data,$picFields = []){
-        if(!$picFields){
+    /**
+     * 多图字段转换（依赖 orm\system\SystemFile；Debug 存在时可打点日志）
+     */
+    public static function multiPicFieldCov(&$data, $picFields = []){
+        if (!$picFields || !class_exists('\orm\system\SystemFile', false)) {
             return $data;
         }
         $picIds = [];
-        foreach($picFields as &$picField){
-            $picIdStr = implode(',',array_column($data,$picField));
-            $picIds = array_merge($picIds, explode(',',$picIdStr));
+        foreach ($picFields as $picField) {
+            $picIdStr = implode(',', array_column($data, $picField));
+            $picIds = array_merge($picIds, explode(',', $picIdStr));
         }
-        Debug::debug('picFieldCov的$picIds',$picIds);
-        if(array_unique($picIds)){
-            //根据图像id，提取已有的图像列表
-//            $conPic[] = ['id','in', array_unique($picIds)];
-            //$fileTable = SystemFile::mainModel()->getTable();
-//            $picObjs = SystemFile::mainModel()->where( $conPic )->field('id,file_type,file_path,file_path as rawPath')->select();
-//            $picArr = $picObjs ? $picObjs->toArray() : [];
-            
-            $picArr = SystemFile::filesWithSys($picIds);
-            $picObj = static::fieldSetKey($picArr, 'id');
-            //拼接图像
-            foreach($data as &$v){
-                foreach($picFields as &$picField){
-                    // TODO [ 20220518 ] [8]未定义数组索引: icon_pic[/www/wwwroot/tenancy.xiesemi.cn/vendor/xjryanse/logic/src/Arrays2d.php:201]
-                    // 20220807，非字符串不转
-                    $idArr = explode(',',$v[$picField]);
-                    if($idArr){
-                        $v[$picField] = [];
-                    }
-                    foreach($idArr as $picId){
-                        // 20230414：客诉实名制多图
-                        if($picId){
-                            $v[$picField][] = isset($picObj[$picId]) ? $picObj[$picId] : [];
-                        }
-                        //$v[$picField][] = isset($picObj[$picId]) ? $picObj[$picId] : [];
+        if (class_exists('Debug', false)) {
+            \Debug::debug('picFieldCov的$picIds', $picIds);
+        }
+        $picIds = array_filter(array_unique($picIds));
+        if (!$picIds) {
+            return $data;
+        }
+        $picArr = \orm\system\SystemFile::filesWithSys($picIds);
+        $picObj = static::fieldSetKey($picArr, 'id');
+        foreach ($data as &$v) {
+            foreach ($picFields as $picField) {
+                $idStr = isset($v[$picField]) ? $v[$picField] : '';
+                $idArr = $idStr !== '' ? explode(',', $idStr) : [];
+                $v[$picField] = [];
+                foreach ($idArr as $picId) {
+                    if ($picId !== '') {
+                        $v[$picField][] = isset($picObj[$picId]) ? $picObj[$picId] : [];
                     }
                 }
             }
         }
-
         return $data;
     }
     /**
