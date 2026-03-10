@@ -2,6 +2,7 @@
 
 namespace xjryanse\phplite\tcp;
 
+use Exception;
 /**
  * tcp同步请求动作
  */
@@ -11,9 +12,9 @@ class Sync {
      */
     public static function request($host, $port, $send_data, $timeout = 3) {
         // 1. 建立TCP短连接
-        $socket = stream_socket_client("tcp://{$host}:{$port}", $errno, $errmsg, $timeout);
+        $socket = @stream_socket_client("tcp://{$host}:{$port}", $errno, $errmsg, $timeout);
         if (!$socket) {
-            return ['code' => 503, 'msg' => "连接服务失败:{$errmsg}", 'data' => []];
+            throw new Exception('连接服务失败:'.$host.'端口:'.$port);
         }
         // 2. 发送JSON字符串
         fwrite($socket, json_encode($send_data));
