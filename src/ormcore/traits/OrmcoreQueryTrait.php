@@ -47,6 +47,24 @@ trait OrmcoreQueryTrait {
         }
         return $lists;
     }
+
+    /**
+     * 指定字段的 conList，用于轻量查询（如 keyObj 仅需 id,base_table,page_key,page_name）
+     * @param array $con 条件
+     * @param string $orderBy 排序
+     * @param string $allowFields 允许返回的字段，逗号分隔
+     * @return array
+     */
+    public function conListWithFields($con = [], $orderBy = '', $allowFields = ''){
+        $this->dataSdkCheck();
+        $tableName = $this->table;
+        $lists = $this->dataSdk->tableDataConList($tableName, $con, $orderBy, $allowFields);
+        if($orderBy){
+            $lists = Arrays2d::sort($lists, $orderBy);
+        }
+        return $lists;
+    }
+
     /**
      * 2026年1月29日
      * @param type $mainIds:例如店铺id
