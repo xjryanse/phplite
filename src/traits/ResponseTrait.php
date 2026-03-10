@@ -30,6 +30,8 @@ trait ResponseTrait {
             'serviceArr'=>$serviceTraceArr,
             // 脚本内存占用
             'memory'    => formatMemory(memory_get_peak_usage(true)),
+            // 2026-03：SQL 执行记录，方便调试（格式：[耗时ms]SQL）
+            'sqlArr'    => static::devSqlArr(),
         ];
         // $res['sessionid']   = session_id();
         unset($GLOBALS['serviceTraceArr']);
@@ -53,7 +55,9 @@ trait ResponseTrait {
             // 微服务接口递归调用日志
             'serviceArr'=>$serviceTraceArr,
             // 脚本内存占用
-            'memory'    => formatMemory(memory_get_peak_usage(true)),            
+            'memory'    => formatMemory(memory_get_peak_usage(true)),
+            // 2026-03：SQL 执行记录，方便调试
+            'sqlArr'    => static::devSqlArr(),
         ];
         unset($GLOBALS['serviceTraceArr']);
 
@@ -125,6 +129,17 @@ trait ResponseTrait {
                 'data' => $res['data'],
             ];
         }
+    }
+
+    /**
+     * 2026-03：获取本次请求执行的 SQL 列表（供 $dev.sqlArr 调试）
+     * 依赖 speedy\orm\DbOperate，无则返回空数组
+     */
+    private static function devSqlArr() {
+        if (class_exists(\xjryanse\speedy\orm\DbOperate::class)) {
+            return \xjryanse\speedy\orm\DbOperate::allSqlArr();
+        }
+        return [];
     }
 
     /**

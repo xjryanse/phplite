@@ -32,6 +32,13 @@ class RCache {
     }
 
     /**
+     * Redis setex 兼容：setex(key, ttl, value)
+     */
+    public function setex($key, $ttl, $value) {
+        return $this->set($key, $value, $ttl);
+    }
+
+    /**
      * 设置缓存
      * @param string $key 缓存键
      * @param mixed $value 缓存值
@@ -65,8 +72,11 @@ class RCache {
     public function get($key) {
         $keyN = self::preFix() . $key;
         $cV = $this->redisInst()->get($keyN);
-        if (Strings::isJson($cV)) {
-            $cV = json_decode($cV, JSON_UNESCAPED_UNICODE);
+        if (is_array($cV) || is_object($cV)) {
+            return $cV;
+        }
+        if (is_string($cV) && Strings::isJson($cV)) {
+            $cV = json_decode($cV, true);
         }
         return $cV;
     }

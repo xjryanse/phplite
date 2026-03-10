@@ -79,6 +79,12 @@ class Strings {
      * @return boolean
      */
     public static function isJson($dataStr = '', $assoc = false) {
+        if (is_array($dataStr) || is_object($dataStr)) {
+            return true;
+        }
+        if (!is_string($dataStr)) {
+            return false;
+        }
         $data = $dataStr ? json_decode($dataStr, $assoc) : $dataStr;
         if (($data && (is_object($data))) || is_array($data)) {
             return true;
