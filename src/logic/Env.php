@@ -27,8 +27,10 @@ class Env {
             // 分割键值对 + 去除首尾空格
             [$key, $value] = array_map('trim', explode('=', $line, 2));
             
-            // 4. 批量设置环境变量
-            putenv("{$key}={$value}");
+            // 4. 批量设置环境变量（\putenv 调用全局函数；若被 disable_functions 禁用则跳过）
+            if (function_exists('putenv')) {
+                \putenv("{$key}={$value}");
+            }
             $_ENV[$key] = $value;
             $_SERVER[$key] = $value;
             $envData[$key] = $value; // 存入返回数组，方便调试
