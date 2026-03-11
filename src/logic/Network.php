@@ -66,5 +66,98 @@ class Network {
         return array_unique($ips);
     }
 
+    /**
+     * 判断指定 IP 或域名是否可达（TCP 连接检测，不依赖 exec）
+     * 结果会缓存，在缓存有效期内不重复检测
+     * @param string $host IP 地址或域名
+     * @param float $timeout 超时秒数，默认 1 秒
+     * @param int $port 检测端口，默认 80（HTTP），可改为 443、22 等
+     * @param int $cacheTtl 缓存秒数，默认 60 秒，0 表示不缓存
+     * @return bool true=可达，false=不可达
+     */
+    public static function isPingable($host, $timeout = 2, $port = 80, $cacheTtl = 60) {
+        $host = trim($host);
+        if (empty($host)) {
+            return false;
+        }
+        $cacheKey = "{$host}:{$port}";
+        if ($cacheTtl > 0) {
+            $cached = static::_getPingCache($cacheKey);
+            if ($cached !== null) {
+                return $cached;
+            }
+        }
+        $socket = @stream_socket_client(
+            "tcp://{$host}:{$port}",
+            $errno,
+            $errmsg,
+            $timeout
+        );
+        $result = false;
+        if ($socket) {
+            fclose($socket);
+            $result = true;
+        }
+        if ($cacheTtl > 0) {
+            static::_setPingCache($cacheKey, $result, $cacheTtl);
+        }
+        return $result;
+    }
+
+    /** @var array 内存缓存（同请求内）[key => ['result'=>bool, 'expire'=>timestamp]] */
+    private static $_pingCache = [];
+
+    private static function _getPingCache($key) {
+        if (isset(static::$_pingCache[$key])) {
+            $item = static::$_pingCache[$key];
+            if (time() <= $item['expire']) {
+                return $item['result'];
+            }
+            unset(static::$_pingCache[$key]);
+        }
+        $fileCached = static::_getPingFileCache($key);
+        if ($fileCached !== null) {
+            static::$_pingCache[$key] = ['result' => $fileCached, 'expire' => time() + 10];
+            return $fileCached;
+        }
+        return null;
+    }
+
+    private static function _setPingCache($key, $result, $ttl) {
+        static::$_pingCache[$key] = ['result' => $result, 'expire' => time() + $ttl];
+        static::_setPingFileCache($key, $result, $ttl);
+    }
+
+    private static function _getPingFileCacheDir() {
+        $dir = sys_get_temp_dir() . '/network_ping_cache';
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        return $dir;
+    }
+
+    private static function _getPingFileCache($key) {
+        $file = static::_getPingFileCacheDir() . '/' . md5($key) . '.json';
+        if (!is_file($file)) {
+            return null;
+        }
+        $content = @file_get_contents($file);
+        if ($content === false) {
+            return null;
+        }
+        $data = @json_decode($content, true);
+        if (!$data || !isset($data['expire']) || time() > $data['expire']) {
+            @unlink($file);
+            return null;
+        }
+        return (bool) $data['result'];
+    }
+
+    private static function _setPingFileCache($key, $result, $ttl) {
+        $file = static::_getPingFileCacheDir() . '/' . md5($key) . '.json';
+        $data = ['result' => $result, 'expire' => time() + $ttl];
+        @file_put_contents($file, json_encode($data), LOCK_EX);
+    }
+
 
 }
