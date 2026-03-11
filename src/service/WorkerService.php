@@ -37,6 +37,8 @@ class WorkerService {
     public static function tcpInit($port, $ip='0.0.0.0'){
         $url = 'tcp://' . $ip . ':' . $port;
         static::$tcp = new Worker($url);
+        // Frame 协议：4字节长度+消息体，支持长连接复用
+        static::$tcp->protocol = \Workerman\Protocols\Frame::class;
     }
     
     public static function run(){
@@ -75,6 +77,7 @@ class WorkerService {
         if(count($uArr) <> 3){
             $respJson = static::response(1, 'url异常:'.count($uArr).'路径:'.$url);
             $conn->send($respJson);
+            return true;
         }
         
         try{
@@ -104,16 +107,14 @@ class WorkerService {
 
             $respJson = static::response(0, '获取数据成功', $resp, $res);
             $conn->send($respJson);
-            // 20260114:关闭连接，避免超时
-            $conn->close();
+            // Frame 协议下保持长连接，不关闭
             return true;
         } catch(\Exception $e){
             // 2026年1月27日：增加异常捕获
             $mssg = $e->getMessage();
             $respJson = static::response(1, $mssg);
             $conn->send($respJson);
-            // 20260114:关闭连接，避免超时
-            $conn->close();
+            // 异常也保持连接，由客户端或空闲超时关闭
             return true;
             
         }
