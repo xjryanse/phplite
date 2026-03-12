@@ -5,6 +5,7 @@ namespace xjryanse\phplite\service;
 use Workerman\Worker;
 use Workerman\Timer;
 use xjryanse\phplite\logic\Arrays;
+use xjryanse\phplite\logic\LogBuffer;
 use xjryanse\phplite\error\ErrorWorker;
 use Exception;
 /**
@@ -86,62 +87,71 @@ class WorkerService {
         };
     }
     /**
-     * 消息逻辑
+     * 消息逻辑（Workerman 长进程：每请求需独立 TraceId 并在结束时 flush 日志、清理全局）
      */
     public static function onMsgLogic($conn, $data){
+        // 2026-03：Workerman 下无 HTTP 头，从 param 取或生成 TraceId，避免多请求串线
+        $reqArr = json_decode(trim($data), true);
+        $param  = is_array($reqArr) ? Arrays::value($reqArr, 'param') : [];
+        $traceId = is_array($param) ? (Arrays::value($param, 'X-Trace-Id') ?: Arrays::value($param, 'trace_id')) : null;
+        if ($traceId === null || $traceId === '') {
+            $traceId = uniqid('t' . substr((string)microtime(true), -6) . '_', true);
+        }
+        $GLOBALS['trace_id'] = $traceId;
+
         $startTs = microtime(true) * 1000;
-        // 一个url路由，一个传递参数
-        $reqArr     = json_decode(trim($data), true);            
-        $url        = Arrays::value($reqArr, 'url');
-        $param      = Arrays::value($reqArr, 'param');
+        $url     = Arrays::value($reqArr, 'url');
+        $uArr    = explode('/', $url);
 
-        $uArr   = explode('/',$url);
-
-        if(count($uArr) <> 3){
-            $respJson = static::response(1, 'url路径异常'.count($uArr));
+        if (count($uArr) !== 3) {
+            $respJson = static::response(1, 'url路径异常' . count($uArr), [], [], $traceId);
             $conn->send($respJson);
             $conn->close();
+            static::finishRequest();
             return true;
         }
-        
-        try{
 
-            // 拆解模块；控制器；方法
-            $uModule        = $uArr[0];
-            $uController    = $uArr[1];
-            $uAction        = $uArr[2];
+        try {
+            $uModule     = $uArr[0];
+            $uController = $uArr[1];
+            $uAction     = $uArr[2];
 
-            // 过渡方法：
-            $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
-            if(class_exists($logic)){
-                if(!method_exists($logic, $uAction)){
-                    throw new Exception('类'.$logic.'方法'.$uAction.'不存在');
+            $logic = '\\app\\' . $uModule . '\\logic\\' . ucfirst($uController);
+            if (class_exists($logic)) {
+                if (!method_exists($logic, $uAction)) {
+                    throw new Exception('类' . $logic . '方法' . $uAction . '不存在');
                 }
-                // 这个是新的，启用
                 $resp = static::call($uArr, $param);
             } else {
-                // 这个是原来的，逐步废弃
-                $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController).'Logic';
+                $logic = '\\app\\' . $uModule . '\\logic\\' . ucfirst($uController) . 'Logic';
                 $resp = $logic::$uAction($param);
             }
 
             $endTs = microtime(true) * 1000;
             $res['ts'] = round($endTs) - round($startTs);
-
-            $respJson = static::response(0, '获取数据成功', $resp, $res);
+            $respJson = static::response(0, '获取数据成功', $resp, $res, $traceId);
             $conn->send($respJson);
-            // 20260114:关闭连接，避免超时
             $conn->close();
+            static::finishRequest();
             return true;
-        } catch(\Exception $e){
-            // 2026年1月27日：增加异常捕获
+        } catch (\Exception $e) {
             $mssg = $e->getMessage();
-            $respJson = static::response(1, $mssg);
+            $respJson = static::response(1, $mssg, [], [], $traceId);
             $conn->send($respJson);
-            // 20260114:关闭连接，避免超时
             $conn->close();
+            static::finishRequest();
             return true;
-            
+        }
+    }
+
+    /**
+     * 2026-03：Workerman 单次请求结束：批量写日志、清理全局，避免污染下次请求
+     */
+    protected static function finishRequest(): void {
+        LogBuffer::flush();
+        unset($GLOBALS['trace_id']);
+        if (isset($GLOBALS['serviceTraceArr'])) {
+            unset($GLOBALS['serviceTraceArr']);
         }
     }
     /**
@@ -172,11 +182,20 @@ class WorkerService {
         return $logic->$uAction($post);
     }
     
-    public static function response($code, $msg, $data = [], $res = []){
+    /**
+     * @param int    $code
+     * @param string $msg
+     * @param array  $data
+     * @param array  $res   额外字段（如 ts）
+     * @param string|null $traceId 2026-03：Workerman 响应中带回 TraceId，便于调用方串联链路
+     */
+    public static function response($code, $msg, $data = [], $res = [], $traceId = null){
         $res['code']    = $code;
         $res['message'] = $msg;
         $res['data']    = $data;
-
+        if ($traceId !== null && $traceId !== '') {
+            $res['trace_id'] = $traceId;
+        }
         return json_encode($res, JSON_UNESCAPED_UNICODE);
     }
     

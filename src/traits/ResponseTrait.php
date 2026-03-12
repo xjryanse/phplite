@@ -17,7 +17,11 @@ trait ResponseTrait {
      * 成功返回
      */
     protected static function succReturn($msg = '请求成功', $data = '', $res = []) {
-        global $stime, $serviceTraceArr, $sessionId;        
+        global $stime, $serviceTraceArr, $sessionId;
+        // 2026-03：响应头回传 TraceId，便于前端/网关串联链路
+        if (!empty($GLOBALS['trace_id'])) {
+            header('X-Trace-Id: ' . $GLOBALS['trace_id']);
+        }
         $res['code']        = 0;     //20191205 数据返回的基本结构   三个字段   code=0 ,message='提示', data=>{}
         $res['message']     = $msg;
         $res['data']        = $data;
@@ -45,6 +49,9 @@ trait ResponseTrait {
      */
     protected static function errReturn($msg = '请求失败', $data = '') {
         global $stime, $serviceTraceArr, $sessionId;
+        if (!empty($GLOBALS['trace_id'])) {
+            header('X-Trace-Id: ' . $GLOBALS['trace_id']);
+        }
         $res['code']        = 1;
         $res['message']     = $msg;
         $res['data']        = $data;
