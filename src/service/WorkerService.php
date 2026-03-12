@@ -6,7 +6,6 @@ use Workerman\Worker;
 use Workerman\Timer;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\error\ErrorWorker;
-use xjryanse\phplite\logic\Controller as controllerLogic;
 use Exception;
 /**
  * 2026年1月14日
@@ -14,44 +13,68 @@ use Exception;
  */
 class WorkerService {
     protected static $tcp;
-    
+
+    /** 兼容 worker.php 等入口对 Worker 实例的获取 */
     public static function tcp(){
         return static::$tcp;
     }
 
+    /**
+     * 主入口：一次调用完成启动（worker.php 仅需 WorkerService::start($port)）
+     */
     public static function start($port, $ip='0.0.0.0'){
-        static::tcpInit($port, $ip);
-
-        static::initOnWorkerStart();        
-        
+        $url = 'tcp://' . $ip . ':' . $port;
+        static::$tcp = new Worker($url);
+        static::$tcp->protocol = \Workerman\Protocols\Frame::class; // 与 xjryanse TcpSync 收发一致：4字节长度+消息体
+        static::initOnWorkerStart();
         static::initOnMessage();
-        // 开发模式代码更新
-        if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
-            static::simpleHotReload();
-        } else {
-            echo "【调试】当前为Windows系统，跳过热重载功能\n";
-        }
-        static::run();
+        Worker::runAll();
     }
-    
+
+    /**
+     * 兼容 start.php 等分步入口：仅创建 Worker，不注册事件、不 run。
+     * 若入口只调 tcpInit + run，需在中间自行完成 initOnWorkerStart、initOnMessage 等。
+     */
     public static function tcpInit($port, $ip='0.0.0.0'){
         $url = 'tcp://' . $ip . ':' . $port;
         static::$tcp = new Worker($url);
-        // Frame 协议：4字节长度+消息体，支持长连接复用
-        static::$tcp->protocol = \Workerman\Protocols\Frame::class;
+        static::$tcp->protocol = \Workerman\Protocols\Frame::class; // 与 xjryanse TcpSync 收发一致：4字节长度+消息体
     }
-    
+
     public static function run(){
         Worker::runAll();
     }
 
-    protected static function initOnWorkerStart(){
-        // 20230331:使用定时器主动推送消息
+    /** 兼容分步入口（worker.php 等）从外部调用 */
+    public static function initOnWorkerStart(){
         self::$tcp->onWorkerStart = function($worker){
-
+            // 20260311:预热加载常用类，减少首次 TCP 请求冷启动耗时
+            static::warmUpClasses();
+            // 热重载定时器放在 Worker 启动后注册，避免 runAll 前 Timer 导致的环境问题
+            static::simpleHotReload();
         };
     }
+
+    /**
+     * 20260311:Worker 启动时预加载常用类，减少首次请求冷启动
+     */
+    protected static function warmUpClasses(){
+        $classes = [
+            \app\data\logic\Sql::class,
+            \app\data\logic\ABase::class,
+            \app\data\logic\dbOperate\Sql::class,
+            \xjryanse\servicesdk\sql\SqlSdk::class,
+            \xjryanse\speedy\core\DbOrm::class,
+            \xjryanse\phplite\logic\ModelQueryCon::class,
+        ];
+        foreach ($classes as $cls) {
+            if (class_exists($cls)) {
+                // 触发自动加载，类加载进内存
+            }
+        }
+    }
     
+    /** 兼容分步入口（worker.php 等）从外部调用 */
     public static function initOnMessage(){
         // 收到其他服务的调用请求时，处理业务逻辑
         self::$tcp->onMessage = function ($conn, $data) {
@@ -75,8 +98,9 @@ class WorkerService {
         $uArr   = explode('/',$url);
 
         if(count($uArr) <> 3){
-            $respJson = static::response(1, 'url异常:'.count($uArr).'路径:'.$url);
+            $respJson = static::response(1, 'url路径异常'.count($uArr));
             $conn->send($respJson);
+            $conn->close();
             return true;
         }
         
@@ -90,8 +114,7 @@ class WorkerService {
             // 过渡方法：
             $logic = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
             if(class_exists($logic)){
-                $commMethods = controllerLogic::commMethods();
-                if(!method_exists($logic, $uAction)  && !in_array($uAction, $commMethods)){
+                if(!method_exists($logic, $uAction)){
                     throw new Exception('类'.$logic.'方法'.$uAction.'不存在');
                 }
                 // 这个是新的，启用
@@ -107,14 +130,16 @@ class WorkerService {
 
             $respJson = static::response(0, '获取数据成功', $resp, $res);
             $conn->send($respJson);
-            // Frame 协议下保持长连接，不关闭
+            // 20260114:关闭连接，避免超时
+            $conn->close();
             return true;
         } catch(\Exception $e){
             // 2026年1月27日：增加异常捕获
             $mssg = $e->getMessage();
             $respJson = static::response(1, $mssg);
             $conn->send($respJson);
-            // 异常也保持连接，由客户端或空闲超时关闭
+            // 20260114:关闭连接，避免超时
+            $conn->close();
             return true;
             
         }
@@ -141,11 +166,9 @@ class WorkerService {
         if(method_exists($logicClass, 'initialize')){
             $logic->initialize($post);
         }
-        $commMethods = controllerLogic::commMethods();
-        if(!method_exists($logicClass, $uAction)  && !in_array($uAction, $commMethods)){
+        if(!method_exists($logicClass, $uAction)){
             throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
         }
-        
         return $logic->$uAction($post);
     }
     
@@ -160,6 +183,7 @@ class WorkerService {
     /**
      * 极简版热重载（支持监听子目录文件）
      */
+    /** 兼容分步入口（worker.php 等）从外部调用 */
     public static function simpleHotReload() {
         $watchDir = rtrim(ROOT_PATH . 'app', DIRECTORY_SEPARATOR);
         echo "【调试】监听目录：{$watchDir}\n";
@@ -217,19 +241,20 @@ class WorkerService {
             // 执行递归扫描
             $scanFiles($watchDir);
 
-            // 检测到文件修改，执行重启
+            // 检测到文件修改，执行重启（无 start.php 时仅打日志，不报错）
             if ($currentMtime > $lastMtime) {
                 echo "[" . date('Y-m-d H:i:s') . "] 代码变更，自动重启Workerman\n";
-
-                // 优化重启逻辑：先判断进程是否存在，避免重复重启报错
-                $restartCmd = 'php ' . escapeshellarg(ROOT_PATH . 'start.php') . ' restart -d';
-                exec($restartCmd, $output, $returnVar);
-
-                if ($returnVar !== 0) {
-                    echo "【错误】重启失败：" . implode("\n", $output) . "\n";
-                }
-
                 $lastMtime = $currentMtime;
+                $entryFile = ROOT_PATH . 'start.php';
+                if (is_file($entryFile)) {
+                    $restartCmd = 'php ' . escapeshellarg($entryFile) . ' restart -d';
+                    exec($restartCmd, $output, $returnVar);
+                    if ($returnVar !== 0) {
+                        echo "【错误】重启失败：" . implode("\n", $output) . "\n";
+                    }
+                } else {
+                    echo "【调试】未找到 start.php，跳过自动重启，请手动重启\n";
+                }
                 Worker::stopAll();
             }
         });
