@@ -50,7 +50,7 @@ class Sync {
     /**
      * TCP同步调用
      */
-    public static function request($host, $port, $send_data, $timeout = 3) {
+    public static function request($host, $port, $send_data, $timeout = 20) {
         if (static::isLongConnectionEnv()) {
             return static::requestLong($host, $port, $send_data, $timeout);
         }
@@ -60,7 +60,7 @@ class Sync {
     /**
      * 短连接：每次请求建立连接，收发后关闭（PHP-FPM 使用）
      */
-    protected static function requestShort($host, $port, $send_data, $timeout = 3) {
+    protected static function requestShort($host, $port, $send_data, $timeout = 20) {
         $socket = @stream_socket_client("tcp://{$host}:{$port}", $errno, $errmsg, $timeout);
         if (!$socket) {
             throw new Exception('连接服务失败:'.$host.'端口:'.$port);
@@ -78,7 +78,7 @@ class Sync {
     /**
      * 长连接：复用连接池（Workerman 等常驻进程使用）
      */
-    protected static function requestLong($host, $port, $send_data, $timeout = 3) {
+    protected static function requestLong($host, $port, $send_data, $timeout = 20) {
         $key = "{$host}:{$port}";
         $now = time();
 
@@ -164,7 +164,22 @@ class Sync {
         while (strlen($lenBuf) < 4) {
             $chunk = fread($socket, 4 - strlen($lenBuf));
             if ($chunk === false || $chunk === '') {
-                throw new Exception('TCP 接收长度头失败');
+                $meta = @stream_get_meta_data($socket);
+                $timedOut = is_array($meta) && !empty($meta['timed_out']);
+                $eof = @feof($socket);
+                $peer = @stream_socket_get_name($socket, true) ?: '';
+                $extra = [];
+                if ($timedOut) {
+                    $extra[] = 'timed_out=1';
+                }
+                if ($eof) {
+                    $extra[] = 'eof=1';
+                }
+                if ($peer) {
+                    $extra[] = 'peer=' . $peer;
+                }
+                $extraStr = $extra ? (' [' . implode(',', $extra) . ']') : '';
+                throw new Exception('TCP 接收长度头失败' . $extraStr);
             }
             $lenBuf .= $chunk;
         }
