@@ -57,6 +57,6 @@ abstract class ControllerBase {
 
         // 2026-03：请求结束前批量写出接口日志，减轻跨网 Redis 次数
         LogBuffer::flush();
-        return $this->dataReturn('请求',$resp);
+        return $this->succReturn('请求成功',$resp);
     }
 }
