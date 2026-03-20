@@ -13,9 +13,9 @@ abstract class LogicABase {
     /**
      * 初始化
      */
-    public function initialize($param){
+    public function initialize($post, $get = []){
         global $svBindId;
-        $svBindId = Arrays::value($param, 'svBindId');
+        $svBindId = Arrays::value($post, 'svBindId')?:Arrays::value($get, 'svBindId');
     }
 
     // 调用实际类的方法

@@ -42,21 +42,21 @@ abstract class ControllerBase {
             throw new Exception('类库'.$logicClass.'不存在');
         }
         $post   = Request::post();
+        $get    = Request::get();
         $logic  = new $logicClass();
         // 加载初始化方法
         if(method_exists($logicClass, 'initialize')){
-            $logic->initialize($post);
+            //2026年3月20日：增加get参数
+            $logic->initialize($post, $get);
         }
         $commMethods = controllerLogic::commMethods();
         if(!method_exists($logicClass, $uAction) && !in_array($uAction, $commMethods)){
             throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
         }
-        // 2026年2月1日：增加get参数，方便http使用
-        $get  = Request::get();
         $resp = $logic->$uAction($post, $get);
 
         // 2026-03：请求结束前批量写出接口日志，减轻跨网 Redis 次数
         LogBuffer::flush();
-        return $this->succReturn('请求成功',$resp);
+        return $this->dataReturn('请求',$resp);
     }
 }
