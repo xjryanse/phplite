@@ -105,6 +105,9 @@ class RCache {
      * 20250224:有缓存取缓存，无缓存闭包算
      */
     public function funcGet($key, $func, $expire = null) {
+        if (defined('OPT_DISABLE_CACHE') && OPT_DISABLE_CACHE) {
+            return $func();
+        }
         $cV = $this->get($key);
         if (!$cV && $this->keyState($key) == -2) {
             $cV = $func();
