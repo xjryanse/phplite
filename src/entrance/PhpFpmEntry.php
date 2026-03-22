@@ -53,14 +53,26 @@ class PhpFpmEntry {
         //跨域处理开始：20250302
         $origin = isset($_SERVER['HTTP_ORIGIN'])? $_SERVER['HTTP_ORIGIN'] : '';  
         $allow_origin = array(
+            'http://localhost:5173',     // 方便本地调试
             'http://localhost:8090',     // 方便本地调试
             'http://localhost:8091',     // 方便本地调试
+            'http://localhost:8092',     // 方便本地调试
+            'http://localhost:8093',     // 方便本地调试
         );
         if(in_array($origin, $allow_origin)){
             header('Access-Control-Allow-Origin:'.$origin);
-            header('Access-Control-Allow-Headers: Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With, Request-Uri, sessionid, source, version');
+            header('Access-Control-Allow-Credentials: true');
+            header('Access-Control-Allow-Headers: Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With, Request-Uri, sessionid, source, version, X-VUE-VERSION');
+            // 预检（OPTIONS）阶段必须返回允许的方法，否则浏览器会拦截
+            header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+            header('Access-Control-Max-Age: 86400');
+            header('Vary: Origin');
         }
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            // 预检请求只需要告诉浏览器允许即可，避免后续路由/鉴权/重定向逻辑影响
+            if (in_array($origin, $allow_origin)) {
+                http_response_code(204);
+            }
             exit;
         }
     }
