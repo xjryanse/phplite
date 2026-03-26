@@ -66,10 +66,15 @@ trait OrmcoreTrait {
      */
     public function delete(){
         $this->dataSdkCheck();
+
+        $id = $this->uuid;
+        if ($id === null || $id === '' || (is_string($id) && trim($id) === '')) {
+            throw new Exception('删除操作必须传入有效主键 id（ORM 实例 uuid 为空）');
+        }
         
         $tableName  = $this->table;
 
-        $this->dataSdk->tableDataDelete($tableName, $this->uuid);
+        $this->dataSdk->tableDataDelete($tableName, $id);
         return true;
     }
     
