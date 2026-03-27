@@ -163,7 +163,7 @@ class WorkerService {
      */
     protected static function pushCaughtException(\Throwable $e): void {
         try {
-            ErrNotice::notice($e);
+            ErrNotice::notice($e, ['runtime' => 'worker']);
         } catch (\Throwable $ignore) {
             // 告警推送失败不应影响业务响应
         }

@@ -22,7 +22,7 @@ class ErrorWorker {
     }
 
     public static function render(\Throwable $e) {
-        ErrNotice::notice($e);
+        ErrNotice::notice($e, ['runtime' => 'worker']);
         //有错误的用1
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;

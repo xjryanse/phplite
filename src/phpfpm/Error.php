@@ -22,7 +22,7 @@ class Error {
     }
 
     public static function render(\Throwable $e) {
-        ErrNotice::notice($e);
+        ErrNotice::notice($e, ['runtime' => 'phpfpm']);
         //有错误的用1
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;
