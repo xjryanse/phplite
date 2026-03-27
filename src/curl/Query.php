@@ -4,11 +4,6 @@ namespace xjryanse\phplite\curl;
 
 class Query {
 
-    private static function applyCurlTimeouts($ch, $transferTimeout = 60) {
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $transferTimeout);
-    }
-
     public static function geturl($url, $header = []) {
         $defaultHeader      = [];
         $defaultHeader[]    = 'Content-type:application/json';
@@ -21,7 +16,7 @@ class Query {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        self::applyCurlTimeouts($ch, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headerArray);
         $output = curl_exec($ch);
         curl_close($ch);
@@ -47,7 +42,7 @@ class Query {
         // curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
 
         curl_setopt($ch, CURLOPT_POST, 1);
-        self::applyCurlTimeouts($ch, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
         if ($data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $dataJson);
@@ -69,7 +64,6 @@ class Query {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); //设为TRUE把curl_exec()结果转化为字串，而不是直接输出 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT"); //设置请求方式
         curl_setopt($ch, CURLOPT_POSTFIELDS, $dataJson); //设置提交的字符串
-        self::applyCurlTimeouts($ch, 60);
         $output = curl_exec($ch);
         curl_close($ch);
         return json_decode($output, true);
@@ -87,7 +81,6 @@ class Query {
         if($data){
             curl_setopt($ch, CURLOPT_POSTFIELDS, $dataJson);
         }
-        self::applyCurlTimeouts($ch, 60);
         $output = curl_exec($ch);
         curl_close($ch);
         return json_decode($output, true);
@@ -102,7 +95,6 @@ class Query {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PATCH");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $dataJson);     //20170611修改接口，用/id的方式传递，直接写在url中了
-        self::applyCurlTimeouts($ch, 60);
         $output = curl_exec($ch);
         curl_close($ch);
         return json_decode($output);
@@ -120,7 +112,6 @@ class Query {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        self::applyCurlTimeouts($ch, 60);
         $output = curl_exec($ch);
         curl_close($ch);
         return json_decode($output, true);
@@ -142,7 +133,6 @@ class Query {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        self::applyCurlTimeouts($ch, 60);
         $output = curl_exec($ch);
         curl_close($ch);
 
@@ -161,7 +151,6 @@ class Query {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT"); //设置请求方式
-        self::applyCurlTimeouts($ch, 60);
         $output = curl_exec($ch);
         curl_close($ch);
         return json_decode($output, true);

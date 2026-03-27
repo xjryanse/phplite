@@ -7,6 +7,7 @@ use Workerman\Timer;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\LogBuffer;
 use xjryanse\phplite\error\ErrorWorker;
+use xjryanse\servicesdk\ErrNotice;
 use Exception;
 /**
  * 2026年1月14日
@@ -134,7 +135,9 @@ class WorkerService {
             $conn->close();
             static::finishRequest();
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // 业务层已捕获的异常也主动推送，避免仅靠全局异常处理器遗漏。
+            static::pushCaughtException($e);
             $mssg = $e->getMessage();
             $respJson = static::response(1, $mssg, [], [], $traceId);
             $conn->send($respJson);
@@ -152,6 +155,17 @@ class WorkerService {
         unset($GLOBALS['trace_id']);
         if (isset($GLOBALS['serviceTraceArr'])) {
             unset($GLOBALS['serviceTraceArr']);
+        }
+    }
+
+    /**
+     * 业务层捕获异常时的告警推送（不影响主流程返回）。
+     */
+    protected static function pushCaughtException(\Throwable $e): void {
+        try {
+            ErrNotice::notice($e);
+        } catch (\Throwable $ignore) {
+            // 告警推送失败不应影响业务响应
         }
     }
     /**
