@@ -56,6 +56,9 @@ trait OrmcoreTrait {
         $data['id'] = $this->uuid;
 
         $this->dataSdk->tableDataUpdate($tableName, $data);
+        // 更新后清理当前实例缓存，保证后续 get() 重新查库
+        $this->uuData = [];
+        $this->hasUuDataQuery = false;
         return true;
     }
 
