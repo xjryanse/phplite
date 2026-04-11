@@ -58,6 +58,54 @@ class LogBuffer {
         } catch (\Throwable $e) {
             // 写日志失败不阻塞业务，可在此打 error_log
         }
+        // 可选：按项目目录落盘，便于在服务器上直接 tail（需开启 LOG_BUFFER_FILE）
+        try {
+            self::appendToProjectLogFile($items);
+        } catch (\Throwable $e) {
+            // 与 Redis 一致：落盘失败不阻塞业务
+        }
+    }
+
+    /**
+     * 写入项目目录下日志文件：{ROOT_PATH}/runtime/log/{项目名}/Y-m-d.log
+     * 项目名：环境变量 LOG_PROJECT_SLUG，未设则用 basename(ROOT_PATH)（如 service_zzcr）
+     * 开启：环境变量 LOG_BUFFER_FILE=1
+     */
+    private static function appendToProjectLogFile(array $items): void {
+        if (empty($items)) {
+            return;
+        }
+        $flag = getenv('LOG_BUFFER_FILE');
+        if ($flag === false || $flag === '' || $flag === '0') {
+            return;
+        }
+        if (!defined('ROOT_PATH')) {
+            return;
+        }
+        $slug = self::projectLogSlug();
+        $base = rtrim(ROOT_PATH, '/\\') . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'log'
+            . DIRECTORY_SEPARATOR . $slug;
+        if (!is_dir($base) && !@mkdir($base, 0755, true)) {
+            return;
+        }
+        $file = $base . DIRECTORY_SEPARATOR . date('Y-m-d') . '.log';
+        $lines = [];
+        foreach ($items as $msg) {
+            $lines[] = json_encode($msg, JSON_UNESCAPED_UNICODE);
+        }
+        @file_put_contents($file, implode("\n", $lines) . "\n", FILE_APPEND | LOCK_EX);
+    }
+
+    /**
+     * 日志子目录名，默认与部署目录名一致（如 /www/wwwroot/service_zzcr → service_zzcr）
+     */
+    private static function projectLogSlug(): string {
+        $v = getenv('LOG_PROJECT_SLUG');
+        if ($v !== false && $v !== '') {
+            return preg_replace('/[^a-zA-Z0-9._-]/', '_', $v);
+        }
+        $base = basename(rtrim(ROOT_PATH, '/\\'));
+        return $base !== '' ? $base : 'app';
     }
 
     private static function env(): string {

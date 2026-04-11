@@ -41,12 +41,9 @@ trait OrmcoreQueryTrait {
     public function conList($con = [],$orderBy='', $limit = 0){
         $this->dataSdkCheck();
         $tableName              = $this->table;
-        $lists = $this->dataSdk->tableDataConList($tableName, $con, $orderBy, '');
+        $lists = $this->dataSdk->tableDataConList($tableName, $con, $orderBy, $limit);
         if($orderBy){
             $lists = Arrays2d::sort($lists, $orderBy);
-        }
-        if($limit > 0){
-            $lists = array_slice($lists, 0, $limit);
         }
         return $lists;
     }
