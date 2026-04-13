@@ -116,6 +116,51 @@ trait OrmcoreQueryTrait {
         $pgList['mts']  = round(microtime(true) * 1000 - $sMts);
         return $pgList;
     }
+
+    /**
+     * 条件计数：优先走 data/table/paginate 仅取总条数（page=1、listRows=1），避免 conList 拉全量。
+     * 若分页返回中无法解析总数，则回退为 conList 后 count（大数据量时较慢）。
+     */
+    public function conCount($con = []) {
+        $this->dataSdkCheck();
+        $param = [
+            'page'        => 1,
+            'currentPage' => 1,
+            'listRows'    => 1,
+            'pageRecords' => 1,
+        ];
+        $pgList = $this->paginate($con, '', $param);
+        $total = $this->extractPaginateTotal($pgList);
+        if ($total !== null) {
+            return $total;
+        }
+        $list = $this->conList($con);
+        return is_array($list) ? count($list) : 0;
+    }
+
+    /**
+     * @param array $pgList paginate 返回值（含可能存在的 mts）
+     */
+    private function extractPaginateTotal($pgList) {
+        if (!is_array($pgList)) {
+            return null;
+        }
+        $row = $pgList;
+        unset($row['mts']);
+        foreach (['totalRecords', 'total', 'totalRows', 'total_result', 'recordCount'] as $k) {
+            if (isset($row[$k])) {
+                return (int) $row[$k];
+            }
+        }
+        if (!empty($row['pagination']) && is_array($row['pagination'])) {
+            foreach (['totalRecords', 'total'] as $k) {
+                if (isset($row['pagination'][$k])) {
+                    return (int) $row['pagination'][$k];
+                }
+            }
+        }
+        return null;
+    }
     
     public function fieldArr(){
         $this->dataSdkCheck();
