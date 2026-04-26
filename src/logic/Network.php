@@ -122,7 +122,7 @@ class Network {
     public static function allServerIpConvert($ip,$port=''){
         $key = __METHOD__.$ip.$port;    
         // SCache::rm($key);
-        return SCache::funcGet($key, function() use ($ip){
+        $res = SCache::funcGet($key, function() use ($ip, $port){
             $list = static::allServerIps();
             foreach($list as $v){
                 // 无匹配ip；直接下一个
@@ -137,6 +137,7 @@ class Network {
             }
             return ['ip' => null, 'time_ms' => null, 'msg' => '未匹配到可用IP'];
         });
+        return $res;
     }
 
     /**
