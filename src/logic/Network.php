@@ -1,5 +1,6 @@
 <?php
 namespace xjryanse\phplite\logic;
+use xjryanse\phplite\cache\SCache;
 
 /*
  * 20251007:网络逻辑
@@ -80,84 +81,121 @@ class Network {
         if (empty($host)) {
             return false;
         }
-        $cacheKey = "{$host}:{$port}";
+        $cacheKey = static::_pingCacheKey($host, $port);
         if ($cacheTtl > 0) {
-            $cached = static::_getPingCache($cacheKey);
-            if ($cached !== null) {
-                return $cached;
+            if (SCache::exists($cacheKey)) {
+                return (bool) SCache::get($cacheKey);
             }
         }
+        $result = static::_tcpProbeMs($host, $port, $timeout) !== null;
+        if ($cacheTtl > 0) {
+            SCache::set($cacheKey, (int) $result, (int) $cacheTtl);
+        }
+        return $result;
+    }
+
+    /**
+     * 2026年4月26日：服务端ip地址
+     *  ["count"] => int(5)
+        ["items"] => array(5) {
+          [0] => array(4) {
+            ["client_key"] => string(32) "a4f784ef0afaf8e2fc2c4e4edcf9e342"
+            ["device_id"] => string(14) "2025-New-XM-V2"
+            ["ip"] => array(4) {
+              [0] => string(10) "10.9.0.202"
+              [1] => string(12) "192.168.80.1"
+              [2] => string(13) "192.168.142.1"
+              [3] => string(13) "192.168.0.101"
+            }
+            ["last_seen"] => string(25) "2026-04-26T12:01:28+00:00"
+          }
+     *  }
+     */
+    public static function allServerIps(){
+        $url = 'http://10.9.0.1:9942/ips';
+        $res = \xjryanse\phplite\curl\Query::getUrl($url);
+        return $res['items'];
+    }
+    /**
+     * ip转换，得到最快的ip；
+     */
+    public static function allServerIpConvert($ip,$port=''){
+        $key = __METHOD__.$ip.$port;    
+        // SCache::rm($key);
+        return SCache::funcGet($key, function() use ($ip){
+            $list = static::allServerIps();
+            foreach($list as $v){
+                // 无匹配ip；直接下一个
+                if(!in_array($ip, $v['ip'])){
+                    continue;
+                }
+                $ips = isset($v['ip']) && is_array($v['ip']) ? $v['ip'] : [];
+                if (empty($ips)) {
+                    continue;
+                }
+                return static::getFastestIp($ips, $port ? (int)$port : 80);
+            }
+            return ['ip' => null, 'time_ms' => null, 'msg' => '未匹配到可用IP'];
+        });
+    }
+
+    /**
+     * 检测单个IP的ping延迟（毫秒）
+     * @param string $ip IP地址
+     * @param int $timeout 超时时间（秒）
+     * @return float|bool 延迟ms，失败返回false
+     */
+    public static function getIpPingSpeed(string $ip, int $timeout = 1, int $port = 80) {
+        $speed = static::_tcpProbeMs($ip, $port, $timeout);
+        return $speed === null ? false : $speed;
+    }
+
+    /**
+     * 从IP列表中获取连接速度最快的IP
+     * @param array $ipList IP数组
+     * @return array 最快IP + 延迟信息
+     */
+    public static function getFastestIp(array $ipList, int $port = 80, int $timeout = 1): array {
+        $ipSpeeds = [];
+        foreach ($ipList as $ip) {
+            $speed = static::getIpPingSpeed(trim($ip), $timeout, $port);
+            if ($speed !== false) {
+                $ipSpeeds[$ip] = $speed;
+            }
+        }
+        if (empty($ipSpeeds)) {
+            return ['ip' => null, 'time' => null, 'msg' => '所有IP均不可达'];
+        }
+        // 按延迟升序排序（最小=最快）
+        asort($ipSpeeds);
+        $fastestIp = key($ipSpeeds);
+        $fastestTime = current($ipSpeeds);
+        return [
+            'ip' => $fastestIp,
+            'time_ms' => $fastestTime,
+            'all_result' => $ipSpeeds
+        ];
+    }
+
+    /**
+     * TCP探测耗时（毫秒），失败返回null
+     */
+    private static function _tcpProbeMs($host, $port = 80, $timeout = 2) {
+        $start = microtime(true);
         $socket = @stream_socket_client(
             "tcp://{$host}:{$port}",
             $errno,
             $errmsg,
             $timeout
         );
-        $result = false;
-        if ($socket) {
-            fclose($socket);
-            $result = true;
-        }
-        if ($cacheTtl > 0) {
-            static::_setPingCache($cacheKey, $result, $cacheTtl);
-        }
-        return $result;
-    }
-
-    /** @var array 内存缓存（同请求内）[key => ['result'=>bool, 'expire'=>timestamp]] */
-    private static $_pingCache = [];
-
-    private static function _getPingCache($key) {
-        if (isset(static::$_pingCache[$key])) {
-            $item = static::$_pingCache[$key];
-            if (time() <= $item['expire']) {
-                return $item['result'];
-            }
-            unset(static::$_pingCache[$key]);
-        }
-        $fileCached = static::_getPingFileCache($key);
-        if ($fileCached !== null) {
-            static::$_pingCache[$key] = ['result' => $fileCached, 'expire' => time() + 10];
-            return $fileCached;
-        }
-        return null;
-    }
-
-    private static function _setPingCache($key, $result, $ttl) {
-        static::$_pingCache[$key] = ['result' => $result, 'expire' => time() + $ttl];
-        static::_setPingFileCache($key, $result, $ttl);
-    }
-
-    private static function _getPingFileCacheDir() {
-        $dir = sys_get_temp_dir() . '/network_ping_cache';
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
-        }
-        return $dir;
-    }
-
-    private static function _getPingFileCache($key) {
-        $file = static::_getPingFileCacheDir() . '/' . md5($key) . '.json';
-        if (!is_file($file)) {
+        if (!$socket) {
             return null;
         }
-        $content = @file_get_contents($file);
-        if ($content === false) {
-            return null;
-        }
-        $data = @json_decode($content, true);
-        if (!$data || !isset($data['expire']) || time() > $data['expire']) {
-            @unlink($file);
-            return null;
-        }
-        return (bool) $data['result'];
+        fclose($socket);
+        return round((microtime(true) - $start) * 1000, 3);
     }
 
-    private static function _setPingFileCache($key, $result, $ttl) {
-        $file = static::_getPingFileCacheDir() . '/' . md5($key) . '.json';
-        $data = ['result' => $result, 'expire' => time() + $ttl];
-        @file_put_contents($file, json_encode($data), LOCK_EX);
+    private static function _pingCacheKey($host, $port) {
+        return 'network:ping:' . md5($host . ':' . $port);
     }
-
-
 }
