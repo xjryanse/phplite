@@ -74,6 +74,31 @@ class RqParams implements RqParamsInterface{
         return $key ? Arrays::value($post, $key) : $post;
     }
 
+    /**
+     * 上传文件；无字段名时返回 $_FILES 镜像
+     */
+    public function file(?string $name = null) {
+        $files = is_array($this->files) ? $this->files : [];
+        if ($name === null || $name === '') {
+            return $files;
+        }
+        if (!isset($files[$name])) {
+            return null;
+        }
+        $f = $files[$name];
+        if (isset($f['tmp_name']) && is_array($f['tmp_name'])) {
+            $i = 0;
+            return [
+                'name' => $f['name'][$i] ?? '',
+                'type' => $f['type'][$i] ?? '',
+                'tmp_name' => $f['tmp_name'][$i] ?? '',
+                'error' => $f['error'][$i] ?? UPLOAD_ERR_NO_FILE,
+                'size' => $f['size'][$i] ?? 0,
+            ];
+        }
+        return $f;
+    }
+
     public function input() {
         return $this->input;
     }

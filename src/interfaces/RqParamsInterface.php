@@ -17,6 +17,12 @@ interface RqParamsInterface {
     public function get(?string $key= null);
     // 获取POST参数
     public function post(?string $key= null);
+    /**
+     * 上传文件（与 $_FILES 对齐）；无 $name 时返回全部文件数组
+     * @param string|null $name 表单字段名
+     * @return array|null 单文件为含 tmp_name/type/size/name/error 的数组
+     */
+    public function file(?string $name = null);
     // 标记当前运行环境：fpm；swoole
     public function env();
     
