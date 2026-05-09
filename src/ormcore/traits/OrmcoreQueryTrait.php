@@ -38,10 +38,10 @@ trait OrmcoreQueryTrait {
      * @param type $con
      * @return type
      */
-    public function conList($con = [],$orderBy='', $limit = 0){
+    public function conList($con = [],$orderBy=''){
         $this->dataSdkCheck();
         $tableName              = $this->table;
-        $lists = $this->dataSdk->tableDataConList($tableName, $con, $orderBy, $limit);
+        $lists = $this->dataSdk->tableDataConList($tableName, $con, $orderBy);
         if($orderBy){
             $lists = Arrays2d::sort($lists, $orderBy);
         }
