@@ -21,7 +21,9 @@ trait OrmcoreTrait {
         } else {
             // 新增
             $data['id'] = SnowFlake::generateParticle();
-            return static::inst()->insert($data);
+            $res = static::inst()->insert($data);
+            // 20260508:返回id
+            return $res ? $data['id'] : '';
         }
     }
     
