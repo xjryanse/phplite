@@ -21,6 +21,8 @@ class Route{
     protected $controller;
     // 方法
     protected $action;
+    // 解析后的路径分段（已处理公司 key）
+    protected $pathParts = [];
     
     protected $rqParamInst;
     
@@ -53,6 +55,7 @@ class Route{
             // 公司信息会话初始化
             // SystemCompany::sessionInit($this->comKey);
         }
+        $this->pathParts = $pathParts;
         // 根据分割结果更新模块、控制器和方法
         $this->module       = Arrays::value($pathParts, '0')?:'index';
         $this->controller   = ucfirst(Strings::camelize(Strings::uncamelize((Arrays::value($pathParts, '1')?:'index'))));
@@ -85,5 +88,12 @@ class Route{
      */
     public function comKey(){
         return $this->comKey;
+    }
+    /**
+     * 路径分段数量（不含公司 key）
+     * @return int
+     */
+    public function pathPartCount(){
+        return count($this->pathParts);
     }
 }

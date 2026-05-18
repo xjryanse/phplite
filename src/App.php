@@ -1,6 +1,7 @@
 <?php
 namespace xjryanse\phplite;
 
+use xjryanse\phplite\controller\Apis;
 use xjryanse\phplite\facade\Route;
 use Exception;
 
@@ -19,8 +20,22 @@ class App {
      * @return type
      */
     public function run (){
-        // 加载控制器类文件
+        // /apis：返回项目 logic 接口列表
+        if ($this->isApisListRoute()) {
+            return json([
+                'code'    => 0,
+                'message' => '请求成功',
+                'data'    => Apis::all(),
+            ]);
+        }
         return $this->loadClass();
+    }
+
+    /**
+     * 路径仅一段且为 apis，如 /apis
+     */
+    protected function isApisListRoute() {
+        return Route::module() === 'apis' && Route::pathPartCount() === 1;
     }
 
     /**
