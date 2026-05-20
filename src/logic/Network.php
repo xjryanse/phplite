@@ -1,5 +1,7 @@
 <?php
 namespace xjryanse\phplite\logic;
+
+use xjryanse\phplite\logic\Strings;
 use xjryanse\phplite\cache\SCache;
 
 /*
@@ -159,6 +161,11 @@ class Network {
     public static function getFastestIp(array $ipList, int $port = 80, int $timeout = 1): array {
         $ipSpeeds = [];
         foreach ($ipList as $ip) {
+            $ip = trim($ip);
+            // 新增：判断IP以172开头，直接跳过
+            if (Strings::isStartWith($ip, '172')) {
+                continue;
+            }
             $speed = static::getIpPingSpeed(trim($ip), $timeout, $port);
             if ($speed !== false) {
                 $ipSpeeds[$ip] = $speed;
