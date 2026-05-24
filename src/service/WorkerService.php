@@ -5,7 +5,8 @@ namespace xjryanse\phplite\service;
 use Workerman\Worker;
 use Workerman\Timer;
 use xjryanse\phplite\logic\Arrays;
-use xjryanse\phplite\logic\LogBuffer;
+use xjryanse\phplite\logic\ApiStats;
+use xjryanse\phplite\logic\LogicDispatch;
 use xjryanse\phplite\error\ErrorWorker;
 use xjryanse\servicesdk\ErrNotice;
 use Exception;
@@ -68,6 +69,8 @@ class WorkerService {
             \xjryanse\servicesdk\sql\SqlSdk::class,
             \xjryanse\speedy\core\DbOrm::class,
             \xjryanse\phplite\logic\ModelQueryCon::class,
+            \xjryanse\phplite\logic\LogicDispatch::class,
+            \xjryanse\phplite\logic\ApiStats::class,
         ];
         foreach ($classes as $cls) {
             if (class_exists($cls)) {
@@ -125,7 +128,12 @@ class WorkerService {
                 $resp = static::call($uArr, $param);
             } else {
                 $logic = '\\app\\' . $uModule . '\\logic\\' . ucfirst($uController) . 'Logic';
-                $resp = $logic::$uAction($param);
+                $path = LogicDispatch::path($uModule, $uController, $uAction);
+                try {
+                    $resp = $logic::$uAction($param);
+                } finally {
+                    ApiStats::hit($path);
+                }
             }
 
             $endTs = microtime(true) * 1000;
@@ -151,7 +159,7 @@ class WorkerService {
      * 2026-03：Workerman 单次请求结束：批量写日志、清理全局，避免污染下次请求
      */
     protected static function finishRequest(): void {
-        LogBuffer::flush();
+        LogicDispatch::finishRequest();
         unset($GLOBALS['trace_id']);
         if (isset($GLOBALS['serviceTraceArr'])) {
             unset($GLOBALS['serviceTraceArr']);
@@ -176,24 +184,13 @@ class WorkerService {
      * @throws Exception
      */
     public static function call($uArr, $post){
-        $uModule        = $uArr[0];
-        $uController    = $uArr[1];
-        $uAction        = $uArr[2];
-
-        $logicClass = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
-        if(!class_exists($logicClass)){
-            throw new Exception('类库'.$logicClass.'不存在');
-        }
-
-        $logic  = new $logicClass();
-        // 加载初始化方法
-        if(method_exists($logicClass, 'initialize')){
-            $logic->initialize($post);
-        }
-        if(!method_exists($logicClass, $uAction)){
-            throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
-        }
-        return $logic->$uAction($post);
+        return LogicDispatch::invoke(
+            $uArr[0],
+            $uArr[1],
+            $uArr[2],
+            $post,
+            []
+        );
     }
     
     /**

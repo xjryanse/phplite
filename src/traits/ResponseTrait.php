@@ -5,6 +5,7 @@ namespace xjryanse\phplite\traits;
 use service\ConfigService;
 use xjryanse\phplite\facade\Request;
 use xjryanse\phplite\facade\Route;
+use xjryanse\phplite\logic\ApiStats;
 use orm\sql\Sql;
 use xjryanse\phplite\orm\DbOperate;
 // use xjryanse\phplite\session\RedisSession;
@@ -30,6 +31,7 @@ trait ResponseTrait {
         $res['$dev']       = [
             'device'    => gethostname(),
             'mts'       =>intval(microtime(true) * 1000) - $stime,
+            'queryIndex'=> ApiStats::queryIndex(),
             // 微服务接口递归调用日志
             'serviceArr'=>$serviceTraceArr,
             // 脚本内存占用
@@ -59,6 +61,7 @@ trait ResponseTrait {
         $res['$dev']       = [
             'device'    => gethostname(),
             'mts'       =>intval(microtime(true) * 1000) - $stime,
+            'queryIndex'=> ApiStats::queryIndex(),
             // 微服务接口递归调用日志
             'serviceArr'=>$serviceTraceArr,
             // 脚本内存占用

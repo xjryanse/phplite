@@ -92,6 +92,24 @@ class Redis {
     }
 
     /**
+     * 批量接口调用量计数，用于 ApiStats 请求结束时一次性 HINCRBY
+     * @param array $prepared [ ['key'=>'...', 'field'=>'path', 'inc'=>1], ... ]
+     */
+    public function statsBatchIncr(array $prepared): void {
+        if (empty($prepared)) {
+            return;
+        }
+        $redis = $this->rdInstForLog();
+        $ttl = 86400 * 90;
+        $redis->multi(\Redis::PIPELINE);
+        foreach ($prepared as $item) {
+            $redis->hIncrBy($item['key'], $item['field'], (int) $item['inc']);
+            $redis->expire($item['key'], $ttl);
+        }
+        $redis->exec();
+    }
+
+    /**
      * 2026年1月17日
      * @param type $msgKey
      * @param type $data

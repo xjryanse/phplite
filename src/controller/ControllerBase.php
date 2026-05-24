@@ -4,8 +4,7 @@ namespace xjryanse\phplite\controller;
 
 use xjryanse\phplite\facade\Request;
 use xjryanse\phplite\facade\Route;
-use xjryanse\phplite\logic\Controller as controllerLogic;
-use xjryanse\phplite\logic\LogBuffer;
+use xjryanse\phplite\logic\LogicDispatch;
 use Exception;
 /**
  * 数据表，常规逻辑
@@ -33,30 +32,15 @@ abstract class ControllerBase {
         }
         $GLOBALS['trace_id'] = $traceId;
 
-        $uModule        = Route::module();
-        $uController    = Route::controller();
-        $uAction        = Route::action();
+        $resp = LogicDispatch::invoke(
+            Route::module(),
+            Route::controller(),
+            Route::action(),
+            Request::post(),
+            Request::get()
+        );
 
-        $logicClass = '\\app\\'.$uModule.'\\logic\\'. ucfirst($uController);
-        if(!class_exists($logicClass)){
-            throw new Exception('类库'.$logicClass.'不存在');
-        }
-        $post   = Request::post();
-        $get    = Request::get();
-        $logic  = new $logicClass();
-        // 加载初始化方法
-        if(method_exists($logicClass, 'initialize')){
-            //2026年3月20日：增加get参数
-            $logic->initialize($post, $get);
-        }
-        $commMethods = controllerLogic::commMethods();
-        if(!method_exists($logicClass, $uAction) && !in_array($uAction, $commMethods)){
-            throw new Exception('类库'.$logicClass.'方法'.$uAction.'不存在');
-        }
-        $resp = $logic->$uAction($post, $get);
-
-        // 2026-03：请求结束前批量写出接口日志，减轻跨网 Redis 次数
-        LogBuffer::flush();
-        return $this->succReturn('请求成功',$resp);
+        LogicDispatch::finishRequest();
+        return $this->succReturn('请求成功', $resp);
     }
 }
