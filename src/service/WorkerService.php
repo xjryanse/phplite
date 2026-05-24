@@ -106,6 +106,12 @@ class WorkerService {
         $startTs = microtime(true) * 1000;
         $url     = Arrays::value($reqArr, 'url');
         $uArr    = explode('/', $url);
+        $GLOBALS['err_notice_ctx'] = [
+            'runtime'  => 'worker',
+            'url'      => is_string($url) ? $url : '',
+            'param'    => is_array($param) ? $param : [],
+            'trace_id' => $traceId,
+        ];
 
         if (count($uArr) !== 3) {
             $respJson = static::response(1, 'url路径异常' . count($uArr), [], [], $traceId);
@@ -145,7 +151,12 @@ class WorkerService {
             return true;
         } catch (\Throwable $e) {
             // 业务层已捕获的异常也主动推送，避免仅靠全局异常处理器遗漏。
-            static::pushCaughtException($e);
+            static::pushCaughtException($e, [
+                'runtime'  => 'worker',
+                'url'      => is_string($url) ? $url : '',
+                'param'    => is_array($param) ? $param : [],
+                'trace_id' => $traceId,
+            ]);
             $mssg = $e->getMessage();
             $respJson = static::response(1, $mssg, [], [], $traceId);
             $conn->send($respJson);
@@ -160,7 +171,7 @@ class WorkerService {
      */
     protected static function finishRequest(): void {
         LogicDispatch::finishRequest();
-        unset($GLOBALS['trace_id']);
+        unset($GLOBALS['trace_id'], $GLOBALS['err_notice_ctx']);
         if (isset($GLOBALS['serviceTraceArr'])) {
             unset($GLOBALS['serviceTraceArr']);
         }
@@ -169,9 +180,15 @@ class WorkerService {
     /**
      * 业务层捕获异常时的告警推送（不影响主流程返回）。
      */
-    protected static function pushCaughtException(\Throwable $e): void {
+    protected static function pushCaughtException(\Throwable $e, array $context = []): void {
         try {
-            ErrNotice::notice($e, ['runtime' => 'worker']);
+            if($context === [] && !empty($GLOBALS['err_notice_ctx']) && is_array($GLOBALS['err_notice_ctx'])){
+                $context = $GLOBALS['err_notice_ctx'];
+            }
+            if(!isset($context['runtime'])){
+                $context['runtime'] = 'worker';
+            }
+            ErrNotice::notice($e, $context);
         } catch (\Throwable $ignore) {
             // 告警推送失败不应影响业务响应
         }
