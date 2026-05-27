@@ -118,6 +118,27 @@ trait OrmcoreQueryTrait {
     }
 
     /**
+     * 2026年5月27日；
+     * @param type $con
+     * @param type $order
+     * @param array $param
+     * @return type
+     */
+    public function paginateOnlyId($con = [], $order = '', $param = []) {
+        // 20240505:自动添加索引，让系统越跑越快
+        $this->dataSdkCheck();
+        $tableName  = $this->table;
+        
+        $sMts       = microtime(true) * 1000;
+        
+        $param['uTableId'] = $this->uTableId;
+        $pgList     = $this->dataSdk->tableDataPaginateOnlyId($tableName, $order, $con, $param); 
+        // 耗时分析
+        $pgList['mts']  = round(microtime(true) * 1000 - $sMts);
+        return $pgList;
+    }
+    
+    /**
      * 条件计数：优先走 data/table/paginate 仅取总条数（page=1、listRows=1），避免 conList 拉全量。
      * 若分页返回中无法解析总数，则回退为 conList 后 count（大数据量时较慢）。
      */
