@@ -18,6 +18,15 @@ class RCache {
 
     use \xjryanse\phplite\traits\InstMultiTrait;
 
+    /** 本库 funcGet 跳过缓存 key，值为 1 时跳过 */
+    const SKIP_KEY = 'sys:cache:skip';
+    const SKIP_MEMO_TTL = 2;
+
+    /** @var int */
+    private $skipMemoAt = 0;
+    /** @var bool|null */
+    private $skipMemoOn = null;
+
     /**
      * 20250226:key前缀，用于区分
      */
@@ -108,6 +117,9 @@ class RCache {
         if (defined('OPT_DISABLE_CACHE') && OPT_DISABLE_CACHE) {
             return $func();
         }
+        if ($this->isSkipOn()) {
+            return $func();
+        }
         $cV = $this->get($key);
         if (!$cV && $this->keyState($key) == -2) {
             $cV = $func();
@@ -134,8 +146,12 @@ class RCache {
             // 扫描带有本系统前缀的key
             $keys = $redis->scan($iterator, $prefix . '*', $count);
             if (!empty($keys)) {
-                // 批量删除找到的key
-                $redis->del($keys);
+                $keys = array_values(array_filter($keys, function ($k) {
+                    return $k !== self::SKIP_KEY;
+                }));
+                if (!empty($keys)) {
+                    $redis->del($keys);
+                }
             }
         } while ($iterator > 0);
         
@@ -166,5 +182,16 @@ class RCache {
         foreach ($arr as $kk => $vv) {
             $this->set($kk, $vv);
         }
+    }
+
+    protected function isSkipOn(): bool {
+        $now = time();
+        if ($this->skipMemoOn !== null && ($now - $this->skipMemoAt) < self::SKIP_MEMO_TTL) {
+            return $this->skipMemoOn;
+        }
+        $v = $this->redisInst()->get(self::SKIP_KEY);
+        $this->skipMemoOn = $v !== false && (string) $v === '1';
+        $this->skipMemoAt = $now;
+        return $this->skipMemoOn;
     }
 }
