@@ -3,6 +3,8 @@
 namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\phplite\logic\Arrays2d;
+use xjryanse\servicesdk\entry\EntrySdk;
+use Exception;
 /**
  * 模型映射查询逻辑
  */
@@ -16,11 +18,19 @@ trait OrmcoreBatchTrait {
             throw new Exception('不支持的实例uuid,需为空或0'.$this->uuid);
         }
         $this->dataSdkCheck();
+        // 20260610
+        $fields     = $this->fields();
+        if(in_array('company_id', $fields)){
+            foreach($data as &$v){
+                $v['company_id'] = EntrySdk::globalSvBindCompanyId();
+            }
+        }
 
         $tableName  = $this->table;
         $res        = $this->dataSdk->tableBatchDataInsert($tableName, $data);
         return $res;
     }
+
     /**
      * [ok]
      * @param array $data
