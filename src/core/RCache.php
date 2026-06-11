@@ -10,9 +10,11 @@ use xjryanse\phplite\logic\Strings;
  * redis缓存：16个库处理
  * 0:普通业务缓存；
  * 1:session；
- * 2:系统配置：
- * 3:页面配置：universal
- * 
+ * 2:SCache：系统配置：
+ * 3:PCache页面配置：universal
+ * 4:SqlCache
+ * 5:GCache:车载定位
+ * 6:MqCache:队列缓存
  */
 class RCache {
 
