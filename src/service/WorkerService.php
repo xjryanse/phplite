@@ -4,12 +4,10 @@ namespace xjryanse\phplite\service;
 
 use Workerman\Worker;
 use Workerman\Timer;
-use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\ApiStats;
 use xjryanse\phplite\logic\LogicDispatch;
 use xjryanse\phplite\error\ErrorWorker;
 use xjryanse\servicesdk\ErrNotice;
-use xjryanse\servicesdk\comm\TcpCtx;
 use Exception;
 /**
  * 2026年1月14日
@@ -72,6 +70,7 @@ class WorkerService {
             \xjryanse\phplite\logic\ModelQueryCon::class,
             \xjryanse\phplite\logic\LogicDispatch::class,
             \xjryanse\phplite\logic\ApiStats::class,
+            WorkerRequest::class,
         ];
         foreach ($classes as $cls) {
             if (class_exists($cls)) {
@@ -95,28 +94,13 @@ class WorkerService {
      * 消息逻辑（Workerman 长进程：每请求需独立 TraceId 并在结束时 flush 日志、清理全局）
      */
     public static function onMsgLogic($conn, $data){
-        $reqArr = json_decode(trim($data), true);
-        $reqArr = is_array($reqArr) ? $reqArr : [];
         $peerIp = method_exists($conn, 'getRemoteIp') ? trim((string) $conn->getRemoteIp()) : '';
-        $ctx     = TcpCtx::absorbFromRequest($reqArr, $peerIp);
-        $bizParam = Arrays::value($reqArr, 'param');
-        $bizParam = is_array($bizParam) ? $bizParam : [];
-
-        $traceId = trim((string) ($ctx['trace_id'] ?? $GLOBALS['trace_id'] ?? ''));
-        if ($traceId === '') {
-            $traceId = uniqid('t' . substr((string) microtime(true), -6) . '_', true);
-            $GLOBALS['trace_id'] = $traceId;
-        }
+        $wr = WorkerRequest::bindFromRaw((string) $data, $peerIp);
 
         $startTs = microtime(true) * 1000;
-        $url     = Arrays::value($reqArr, 'url');
-        $uArr    = explode('/', is_string($url) ? $url : '');
-        $GLOBALS['err_notice_ctx'] = TcpCtx::mergeIntoErrNoticeCtx($ctx, [
-            'runtime'  => 'worker',
-            'url'      => is_string($url) ? $url : '',
-            'param'    => $bizParam,
-            'trace_id' => $traceId,
-        ]);
+        $traceId = $wr->traceId();
+        $bizParam = $wr->param();
+        $uArr = $wr->urlSegments();
 
         if (count($uArr) !== 3) {
             $respJson = static::response(1, 'url路径异常' . count($uArr), [], [], $traceId);
@@ -156,12 +140,7 @@ class WorkerService {
             return true;
         } catch (\Throwable $e) {
             // 业务层已捕获的异常也主动推送，避免仅靠全局异常处理器遗漏。
-            static::pushCaughtException($e, [
-                'runtime'  => 'worker',
-                'url'      => is_string($url) ? $url : '',
-                'param'    => $bizParam,
-                'trace_id' => $traceId,
-            ]);
+            static::pushCaughtException($e);
             $mssg = $e->getMessage();
             $respJson = static::response(1, $mssg, [], [], $traceId);
             $conn->send($respJson);
@@ -176,10 +155,7 @@ class WorkerService {
      */
     protected static function finishRequest(): void {
         LogicDispatch::finishRequest();
-        unset($GLOBALS['trace_id'], $GLOBALS['err_notice_ctx'], $GLOBALS['inbound_caller_ctx']);
-        if (isset($GLOBALS['serviceTraceArr'])) {
-            unset($GLOBALS['serviceTraceArr']);
-        }
+        WorkerRequest::clear();
     }
 
     /**
@@ -187,10 +163,11 @@ class WorkerService {
      */
     protected static function pushCaughtException(\Throwable $e, array $context = []): void {
         try {
-            if($context === [] && !empty($GLOBALS['err_notice_ctx']) && is_array($GLOBALS['err_notice_ctx'])){
-                $context = $GLOBALS['err_notice_ctx'];
+            if ($context === []) {
+                $wr = WorkerRequest::current();
+                $context = $wr !== null ? $wr->toErrNoticeCtx() : [];
             }
-            if(!isset($context['runtime'])){
+            if (!isset($context['runtime'])) {
                 $context['runtime'] = 'worker';
             }
             ErrNotice::notice($e, $context);

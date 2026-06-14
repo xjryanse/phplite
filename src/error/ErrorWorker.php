@@ -3,6 +3,7 @@
 namespace xjryanse\phplite\error;
 
 use xjryanse\servicesdk\ErrNotice;
+use xjryanse\phplite\service\WorkerRequest;
 use Workerman\Connection\ConnectionInterface;
 /**
  * 注册异常处理
@@ -22,7 +23,9 @@ class ErrorWorker {
     }
 
     public static function render(\Throwable $e) {
-        ErrNotice::notice($e, ['runtime' => 'worker']);
+        $wr = WorkerRequest::current();
+        $context = $wr !== null ? $wr->toErrNoticeCtx() : ['runtime' => 'worker'];
+        ErrNotice::notice($e, $context);
         //有错误的用1
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;
