@@ -131,6 +131,33 @@ class RCache {
     }
 
     /**
+     * 获取当前库下全部 key
+     * @return array 逻辑 key 列表（不含 preFix 前缀，便于配合 get/rm 使用）
+     */
+    public function allKeys() {
+        $prefix   = self::preFix();
+        $redis    = $this->redisInst();
+        $keys     = [];
+        $iterator = null;
+        $count    = 1000;
+        do {
+            $batch = $redis->scan($iterator, $prefix . '*', $count);
+            if (!empty($batch)) {
+                foreach ($batch as $k) {
+                    if ($k === self::SKIP_KEY) {
+                        continue;
+                    }
+                    if ($prefix !== '') {
+                        $k = substr($k, strlen($prefix));
+                    }
+                    $keys[] = $k;
+                }
+            }
+        } while ($iterator > 0);
+        return $keys;
+    }
+
+    /**
      * 清除全部缓存
      * @param bool $flushAll 是否清空所有数据库的缓存，默认为 false，即只清空当前数据库
      * @return bool
