@@ -15,6 +15,7 @@ use xjryanse\phplite\logic\Strings;
  * 4:SqlCache
  * 5:GCache:车载定位
  * 6:MqCache:队列缓存
+ * 7:DevCache: 开发调试缓存
  */
 class RCache {
 
