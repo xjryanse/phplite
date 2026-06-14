@@ -32,6 +32,10 @@ class WorkerService {
         // 注册消息接收事件
         static::initOnMessage();
         // 启动
+        static::run();
+    }
+    
+    public static function run(){
         Worker::runAll();
     }
 
