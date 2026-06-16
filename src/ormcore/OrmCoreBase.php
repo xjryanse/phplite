@@ -33,5 +33,11 @@ class OrmCoreBase {
         $this->table = $table;
     }
 
-    
+    /**
+     * Workerman 长进程：清空多例与 uuData 行缓存，避免 catalog 更新后仍读旧数据。
+     */
+    public static function clearProcessInstances(): void
+    {
+        static::$instances = [];
+    }
 }
