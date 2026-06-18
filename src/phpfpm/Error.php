@@ -2,6 +2,7 @@
 
 namespace xjryanse\phplite\phpfpm;
 
+use xjryanse\phplite\logic\ServiceRuntime;
 use xjryanse\servicesdk\ErrNotice;
 
 /**
@@ -26,7 +27,7 @@ class Error {
         //有错误的用1
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;
-        $res['message'] = $e->getMessage();
+        $res['message'] = ServiceRuntime::prefixMessage($e->getMessage());
         $res['trace']   = $e->getTrace();
         $res['file']    = $e->getFile();
         $res['line']    = $e->getLine();

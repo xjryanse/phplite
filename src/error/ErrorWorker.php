@@ -2,6 +2,7 @@
 
 namespace xjryanse\phplite\error;
 
+use xjryanse\phplite\logic\ServiceRuntime;
 use xjryanse\servicesdk\ErrNotice;
 use xjryanse\phplite\service\WorkerRequest;
 use Workerman\Connection\ConnectionInterface;
@@ -32,7 +33,7 @@ class ErrorWorker {
         //有错误的用1
         $res            = [];
         $res['code']    = $e->getCode() ?: 1;
-        $res['message'] = $e->getMessage();
+        $res['message'] = ServiceRuntime::prefixMessage($e->getMessage());
         $res['trace']   = $e->getTrace();
         
         // workerman和php环境处理方法不同

@@ -4,6 +4,7 @@ namespace xjryanse\phplite\service\worker;
 
 use xjryanse\phplite\logic\ApiStats;
 use xjryanse\phplite\logic\LogicDispatch;
+use xjryanse\phplite\logic\ServiceRuntime;
 use xjryanse\phplite\service\WorkerRequest;
 use xjryanse\servicesdk\ErrNotice;
 use Exception;
@@ -107,7 +108,7 @@ trait MessageTrait {
      */
     public static function response($code, $msg, $data = [], $res = [], $traceId = null){
         $res['code']    = $code;
-        $res['message'] = $msg;
+        $res['message'] = ((int) $code === 0) ? $msg : ServiceRuntime::prefixMessage($msg);
         $res['data']    = $data;
         if ($traceId !== null && $traceId !== '') {
             $res['trace_id'] = $traceId;
