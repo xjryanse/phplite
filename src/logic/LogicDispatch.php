@@ -2,6 +2,7 @@
 
 namespace xjryanse\phplite\logic;
 
+use xjryanse\phplite\service\AppRequest;
 use Exception;
 
 /**
@@ -34,6 +35,7 @@ class LogicDispatch {
     public static function finishRequest(): void {
         ApiStats::flush();
         LogBuffer::flush();
+        AppRequest::clear();
     }
 
     /**

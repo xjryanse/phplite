@@ -4,6 +4,7 @@ namespace xjryanse\phplite\controller;
 
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\Controller as controllerLogic;
+use xjryanse\phplite\service\AppRequest;
 
 use Exception;
 /**
@@ -15,7 +16,10 @@ abstract class LogicABase {
      */
     public function initialize($post, $get = []){
         global $svBindId;
-        $svBindId = Arrays::value($post, 'svBindId')?:Arrays::value($get, 'svBindId');
+        $req = AppRequest::current();
+        $svBindId = $req
+            ? $req->svBindId()
+            : (Arrays::value($post, 'svBindId') ?: Arrays::value($get, 'svBindId'));
     }
 
     // 调用实际类的方法

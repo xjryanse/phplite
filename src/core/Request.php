@@ -7,6 +7,7 @@ use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\logic\Strings;
 use xjryanse\phplite\logic\Url;
 use xjryanse\phplite\interfaces\RqParamsInterface;
+use xjryanse\phplite\service\AppRequest;
 use Exception;
 /**
  * 请求入参
@@ -21,6 +22,10 @@ class Request{
     }
 
     public function param($key = ''){
+        $req = AppRequest::current();
+        if ($req !== null) {
+            return $key === '' ? $req->param() : Arrays::value($req->param(), $key);
+        }
         $get    = $this->rqParamInst->get() ? : [];
         $post   = $this->rqParamInst->post() ? : [];
         $param = array_merge($get, $post);
@@ -28,10 +33,18 @@ class Request{
     }
     
     public function get($key = ''){
+        $req = AppRequest::current();
+        if ($req !== null) {
+            return $req->getParams($key);
+        }
         return $this->rqParamInst->get($key);
     }
     
     public function post($key = ''){
+        $req = AppRequest::current();
+        if ($req !== null) {
+            return $req->postParams($key);
+        }
         return $this->rqParamInst->post($key);
     }
     
@@ -39,6 +52,10 @@ class Request{
      * 20250204:请求的ip地址
      */
     public function ip(){
+        $req = AppRequest::current();
+        if ($req !== null) {
+            return $req->ip();
+        }
         return $this->rqParamInst->ip();
     }
     
@@ -70,6 +87,10 @@ class Request{
     }
     
     public function env(){
+        $req = AppRequest::current();
+        if ($req !== null) {
+            return $req->env();
+        }
         return $this->rqParamInst->env();
     }
     
@@ -78,6 +99,10 @@ class Request{
     }
 
     public function header($name){
+        $req = AppRequest::current();
+        if ($req !== null) {
+            return $req->header($name);
+        }
         return $this->rqParamInst->header($name);
     }
     
@@ -95,6 +120,10 @@ class Request{
           }
      */
     public function file($name){
+        $req = AppRequest::current();
+        if ($req !== null) {
+            return $req->file($name);
+        }
         return $this->rqParamInst->file($name);
 //        // 文件的实例
 //        return (new File($file['tmp_name']))->setUploadInfo($file);

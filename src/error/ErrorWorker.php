@@ -4,7 +4,7 @@ namespace xjryanse\phplite\error;
 
 use xjryanse\phplite\logic\ServiceRuntime;
 use xjryanse\servicesdk\ErrNotice;
-use xjryanse\phplite\service\WorkerRequest;
+use xjryanse\phplite\service\AppRequest;
 use Workerman\Connection\ConnectionInterface;
 /**
  * 注册异常处理
@@ -15,20 +15,20 @@ class ErrorWorker {
 
     protected static $connection;
     
-    protected static $wr;
+    protected static $req;
     /**
      * 20250202:注册异常处理
      */
-    public static function register(ConnectionInterface $connection, WorkerRequest $wr) {
+    public static function register(ConnectionInterface $connection, AppRequest $req) {
         self::$connection = $connection;
-        static::$wr = $wr;
+        static::$req = $req;
         // 异常处理
         set_exception_handler([__CLASS__, 'render']);
     }
 
     public static function render(\Throwable $e) {
-        $wr         = static::$wr;
-        $context    = $wr !== null ? $wr->toErrNoticeCtx() : ['runtime' => 'worker'];
+        $req        = static::$req;
+        $context    = $req !== null ? $req->toErrNoticeCtx() : ['runtime' => 'worker'];
         ErrNotice::notice($e, $context);
         //有错误的用1
         $res            = [];

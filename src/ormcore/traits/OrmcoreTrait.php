@@ -3,6 +3,7 @@
 namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\phplite\logic\SnowFlake;
+use xjryanse\phplite\service\AppRequest;
 use xjryanse\servicesdk\entry\EntrySdk;
 use Exception;
 
@@ -41,6 +42,12 @@ trait OrmcoreTrait {
         if(in_array('company_id', $fields)){
             $data['company_id'] = EntrySdk::globalSvBindCompanyId();
         }
+        if (in_array('creater', $fields) && empty($data['creater'])) {
+            $sessionUserId = self::resolveSessionUserId();
+            if ($sessionUserId !== '') {
+                $data['creater'] = $sessionUserId;
+            }
+        }
 
         $tableName  = $this->table;
         $this->dataSdk->tableDataInsert($tableName, $data);
@@ -56,6 +63,14 @@ trait OrmcoreTrait {
         
         $tableName  = $this->table;
         $data['id'] = $this->uuid;
+
+        $fields = $this->fields();
+        if (in_array('updater', $fields)) {
+            $sessionUserId = self::resolveSessionUserId();
+            if ($sessionUserId !== '') {
+                $data['updater'] = $sessionUserId;
+            }
+        }
 
         $this->dataSdk->tableDataUpdate($tableName, $data);
         // 更新后清理当前实例缓存，保证后续 get() 重新查库
@@ -104,5 +119,14 @@ trait OrmcoreTrait {
             $tmpArr[] = $tmp;
         }
         return $tmpArr;
+    }
+
+    /**
+     * 当前请求操作人（统一 AppRequest 上下文）
+     */
+    protected static function resolveSessionUserId(): string
+    {
+        $req = AppRequest::current();
+        return $req ? $req->sessionUserId() : '';
     }
 }

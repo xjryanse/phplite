@@ -8,6 +8,7 @@ define('STATIC_PATH', ROOT_PATH . 'public/');
 use xjryanse\phplite\phpfpm\facade\RqParams;
 use xjryanse\phplite\facade\Request;
 use xjryanse\phplite\facade\Route;
+use xjryanse\phplite\service\AppRequest;
 use xjryanse\phplite\phpfpm\Error;
 use xjryanse\phplite\logic\Arrays;
 use xjryanse\phplite\App;
@@ -91,6 +92,7 @@ class PhpFpmEntry {
             Request::setRqParams($rqParams);
             // 初始化路由参数
             Route::setRqParams($rqParams);
+            AppRequest::bindFromFpm($rqParams);
             // 20250201：主程序运行
             $app = new App();
             // 会话初始化

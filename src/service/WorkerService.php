@@ -4,7 +4,7 @@ namespace xjryanse\phplite\service;
 
 use Workerman\Worker;
 use xjryanse\phplite\error\ErrorWorker;
-use xjryanse\phplite\service\WorkerRequest;
+use xjryanse\phplite\service\AppRequest;
 /**
  * 2026年1月14日
  * 微服务的workerman启动
@@ -65,7 +65,7 @@ class WorkerService {
      */
     protected static function warmUpClasses(){
         $classes = [
-            WorkerRequest::class,
+            AppRequest::class,
             \xjryanse\phplite\logic\LogicDispatch::class,
             \xjryanse\phplite\logic\ApiStats::class,
             \xjryanse\phplite\logic\LogBuffer::class,
@@ -88,12 +88,12 @@ class WorkerService {
             // 请求ip
             $peerIp     = method_exists($conn, 'getRemoteIp') ? trim((string) $conn->getRemoteIp()) : '';
             // 请求上下文
-            $wr         = WorkerRequest::bindFromRaw((string) $data, $peerIp);            
+            $req        = AppRequest::bindFromTcp((string) $data, $peerIp);
             // 1. 注册异常处理：传入Workerman连接对象
-            ErrorWorker::register($conn, $wr);
+            ErrorWorker::register($conn, $req);
             // throw new \Exception('worker调试');
             // 接收请求，转发处理
-            return static::onMsgLogic($conn, $wr);
+            return static::onMsgLogic($conn, $req);
         };
     }
 

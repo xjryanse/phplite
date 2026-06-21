@@ -5,7 +5,7 @@ namespace xjryanse\phplite\service\worker;
 use xjryanse\phplite\logic\ApiStats;
 use xjryanse\phplite\logic\LogicDispatch;
 use xjryanse\phplite\logic\ServiceRuntime;
-use xjryanse\phplite\service\WorkerRequest;
+use xjryanse\phplite\service\AppRequest;
 use xjryanse\servicesdk\ErrNotice;
 use Exception;
 
@@ -16,11 +16,11 @@ trait MessageTrait {
     /**
      * 消息逻辑（Workerman 长进程：每请求需独立 TraceId 并在结束时 flush 日志、清理全局）
      */
-    public static function onMsgLogic($conn, WorkerRequest $wr){
+    public static function onMsgLogic($conn, AppRequest $req){
         $startTs    = microtime(true) * 1000;
-        $traceId    = $wr->traceId();
-        $bizParam   = $wr->param();
-        $uArr       = $wr->urlSegments();
+        $traceId    = $req->traceId();
+        $bizParam   = $req->param();
+        $uArr       = $req->urlSegments();
 
         if (count($uArr) !== 3) {
             $respJson = static::response(1, 'url路径异常' . count($uArr), [], [], $traceId);
@@ -87,8 +87,8 @@ trait MessageTrait {
     protected static function pushCaughtException(\Throwable $e, array $context = []): void {
         try {
             if ($context === []) {
-                $wr = WorkerRequest::current();
-                $context = $wr !== null ? $wr->toErrNoticeCtx() : [];
+                $req = AppRequest::current();
+                $context = $req !== null ? $req->toErrNoticeCtx() : [];
             }
             if (!isset($context['runtime'])) {
                 $context['runtime'] = 'worker';
@@ -123,7 +123,6 @@ trait MessageTrait {
         $conn->send($respJson);
         $conn->close();
         LogicDispatch::finishRequest();
-        WorkerRequest::clear();
         return true;
     }
 }

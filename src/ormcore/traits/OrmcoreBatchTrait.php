@@ -3,6 +3,7 @@
 namespace xjryanse\phplite\ormcore\traits;
 
 use xjryanse\phplite\logic\Arrays2d;
+use xjryanse\phplite\service\AppRequest;
 use xjryanse\servicesdk\entry\EntrySdk;
 use Exception;
 /**
@@ -23,6 +24,17 @@ trait OrmcoreBatchTrait {
         if(in_array('company_id', $fields)){
             foreach($data as &$v){
                 $v['company_id'] = EntrySdk::globalSvBindCompanyId();
+            }
+        }
+        if (in_array('creater', $fields)) {
+            $sessionUserId = AppRequest::current() ? AppRequest::current()->sessionUserId() : '';
+            if ($sessionUserId !== '') {
+                foreach ($data as &$v) {
+                    if (empty($v['creater'])) {
+                        $v['creater'] = $sessionUserId;
+                    }
+                }
+                unset($v);
             }
         }
 
