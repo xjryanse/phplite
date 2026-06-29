@@ -2,7 +2,6 @@
 
 namespace xjryanse\phplite\service\worker;
 
-use Workerman\Worker;
 use Workerman\Timer;
 /**
  * 热重载
@@ -13,13 +12,24 @@ trait HotReloadTrait {
      */
     /** 兼容分步入口（worker.php 等）从外部调用 */
     public static function simpleHotReload() {
-        $watchDir = rtrim(ROOT_PATH . 'app', DIRECTORY_SEPARATOR);
-        echo "【调试】监听目录：{$watchDir}\n";
+        $watchDirs = [
+            ROOT_PATH . 'app',
+            ROOT_PATH . 'core',
+            ROOT_PATH . 'logic',
+        ];
+
+        $watchDirs = array_values(array_filter($watchDirs, function ($dir) {
+            return is_dir($dir) && is_readable($dir);
+        }));
+
+        foreach ($watchDirs as $watchDir) {
+            echo "【调试】监听目录：{$watchDir}\n";
+        }
 
         // 初始时间设为当前时间
         $lastMtime = time();
 
-        Timer::add(5, function () use ($watchDir, &$lastMtime) {
+        Timer::add(5, function () use ($watchDirs, &$lastMtime) {
             // 初始化当前最新修改时间
             $currentMtime = $lastMtime;
 
@@ -67,23 +77,24 @@ trait HotReloadTrait {
             };
 
             // 执行递归扫描
-            $scanFiles($watchDir);
+            foreach ($watchDirs as $watchDir) {
+                $scanFiles($watchDir);
+            }
 
-            // 检测到文件修改，执行重启（无 start.php 时仅打日志，不报错）
+            // 检测到文件修改，执行平滑重载
             if ($currentMtime > $lastMtime) {
-                echo "[" . date('Y-m-d H:i:s') . "] 代码变更，自动重启Workerman\n";
+                echo "[" . date('Y-m-d H:i:s') . "] 代码变更，平滑重载Workerman\n";
                 $lastMtime = $currentMtime;
-                $entryFile = ROOT_PATH . 'start.php';
+                $entryFile = ROOT_PATH . 'public/worker.php';
                 if (is_file($entryFile)) {
-                    $restartCmd = 'php ' . escapeshellarg($entryFile) . ' restart -d';
-                    exec($restartCmd, $output, $returnVar);
+                    $reloadCmd = PHP_BINARY . ' ' . escapeshellarg($entryFile) . ' reload -g';
+                    exec($reloadCmd, $output, $returnVar);
                     if ($returnVar !== 0) {
-                        echo "【错误】重启失败：" . implode("\n", $output) . "\n";
+                        echo "【错误】平滑重载失败：" . implode("\n", $output) . "\n";
                     }
                 } else {
-                    echo "【调试】未找到 start.php，跳过自动重启，请手动重启\n";
+                    echo "【调试】未找到 public/worker.php，跳过平滑重载，请手动重启\n";
                 }
-                Worker::stopAll();
             }
         });
     }
