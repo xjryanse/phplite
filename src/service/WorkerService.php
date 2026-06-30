@@ -22,17 +22,23 @@ class WorkerService {
     }
 
     /**
-     * 主入口：一次调用完成启动（worker.php 仅需 WorkerService::start($port)）
+     * 主入口：一次调用完成启动（worker.php 仅需 WorkerService::start($port, $count)）
+     *
+     * @param int|string      $port       监听端口
+     * @param int|string      $count        进程数；传 IP 字符串时兼容旧写法 start($port, $ip)
+     * @param string          $ip         监听地址（$countOrIp 为进程数时生效）
      */
-    public static function start($port, $ip='0.0.0.0'){
-        // TCP初始化
+    public static function start($port, $count = 1, $ip = '0.0.0.0'){
         static::tcpInit($port, $ip);
-        // 启动事件：注册类加载；热重载
+        static::applyWorkerConfig($count);
         static::initOnWorkerStart();
-        // 注册消息接收事件
         static::initOnMessage();
-        // 启动
         static::run();
+    }
+
+    protected static function applyWorkerConfig(int $count): void {
+        static::$tcp->count = $count;
+        static::$tcp->name = basename(rtrim(ROOT_PATH, '/\\'));
     }
     
     public static function run(){
